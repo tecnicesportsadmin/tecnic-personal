@@ -112,6 +112,48 @@ main.view.wide{max-width:1280px}
 .barra{position:relative;height:8px;border-radius:4px;background:#E3E7E2}
 .barra span{position:absolute;top:0;bottom:0;border-radius:4px;background:var(--verd)}
 .nota{font-size:12.5px;color:var(--gris2)}
+.hores .tram{white-space:nowrap}
+
+/* Horari "a pantalla completa": els 7 dies sempre visibles, sense desplaçar ni fer zoom */
+body.fit #app{height:100vh;height:100dvh;overflow:hidden}
+body.fit main.view{flex:1;min-height:0;gap:8px;padding-top:12px;padding-bottom:calc(74px + env(safe-area-inset-bottom))}
+body.fit .cap h1{font-size:clamp(20px,3.2dvh,26px)}
+body.fit .setmana{padding:2px}
+body.fit .setmana .icon-btn{width:44px;height:clamp(36px,5.4dvh,44px)}
+body.fit .setmana .t b{font-size:clamp(14px,2.1dvh,16px)}
+body.fit .resum{font-size:clamp(11.5px,1.75dvh,13px);gap:12px;align-items:center}
+body.fit .resum .btn.small{min-height:30px;padding:0 10px}
+.dies{display:flex;flex-direction:column;gap:6px}
+body.fit .dies{flex:1;min-height:0;display:grid;grid-template-rows:repeat(7,minmax(0,1fr));gap:clamp(3px,.7dvh,6px);max-height:640px}
+body.fit .dia{min-height:0;height:100%;padding:2px 12px 2px 6px;gap:10px;border-radius:12px;overflow:hidden}
+body.fit .dia.avui{padding-left:5px}
+body.fit .dia .num{width:38px}
+body.fit .dia .num small{font-size:clamp(10px,1.5dvh,12px);line-height:1.1}
+body.fit .dia .num b{font-size:clamp(15px,2.6dvh,20px);line-height:1.1}
+body.fit .dia .mig{gap:clamp(2px,.6dvh,6px)}
+body.fit .dia .mig>.row{gap:4px 6px}
+body.fit .dia .hores{font-size:clamp(12px,1.85dvh,14px);line-height:1.2;display:flex;flex-wrap:wrap;column-gap:6px}
+body.fit .dia .tot{font-size:clamp(12px,1.8dvh,14px)}
+body.fit .dia .tag{display:none}
+body.fit .dia.pend{background:var(--warn-b);border-color:#D9A441}
+body.fit .dia.avui .num{background:var(--verd);color:#fff;border-radius:9px;padding:2px 0}
+body.fit .dia.avui .num small{color:#fff}
+.llegenda-pend{display:none}
+body.fit .llegenda-pend{display:inline-flex;align-items:center;gap:6px}
+body.fit .llegenda-pend i{width:12px;height:12px;border-radius:3px;background:var(--warn-b);border:1.5px solid #D9A441}
+body.fit .barra{height:clamp(4px,.8dvh,8px)}
+body.fit .nota{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:11.5px}
+body.fit .peu-horari{display:none}
+@media (min-width:900px){body.fit main.view{padding-bottom:20px}}
+/* Mòbils molt petits: la nota del dia es veu en tocar-lo */
+@media (max-height:600px){body.fit .nota{display:none}body.fit .resum{gap:10px}}
+/* Pantalles molt baixes (mòbil apaïsat): no hi cap; es torna a la llista normal */
+@media (max-height:500px){
+  body.fit #app{height:auto;overflow:visible}
+  body.fit main.view{padding-bottom:110px}
+  body.fit .dies{display:flex}
+  body.fit .dia{min-height:54px}
+}
 
 /* Missatges */
 .fil{display:flex;flex-direction:column;gap:12px}
@@ -189,7 +231,7 @@ main.view.wide{max-width:1280px}
    (Settings → API Keys). La clau "publishable" és pública per disseny:
    la seguretat la posen les regles RLS de la base de dades.
    ===================================================================== */
-var SUPABASE_URL = 'https://sunahbfnwhjjtxiajfpz.supabase.co';
+var SUPABASE_URL = 'https://tecnicesportsadmin.github.io/tecnic-personal/';
 var SUPABASE_KEY = 'sb_publishable_LQdIiGbdGCdKb5_tTUFJCQ_ogggQgOv';
 
 /* Ha de ser IDÈNTIC a la funció de servidor gestio-usuaris */
@@ -246,6 +288,11 @@ function trams(t) {
   if (!t || t.tipus !== 'treball' || !t.entrada) return [];
   if (t.inici_pausa && t.fi_pausa) return [[t.entrada, t.inici_pausa], [t.fi_pausa, t.sortida]];
   return [[t.entrada, t.sortida]];
+}
+function horesHtml(t) {
+  if (!t) return 'Sense torn';
+  if (t.tipus !== 'treball') return esc(TIPUS_TORN[t.tipus] || t.tipus);
+  return trams(t).map(function (x) { return '<span class="tram">' + esc(hm(x[0]) + '–' + hm(x[1])) + '</span>'; }).join('<span class="sr"> · </span>');
 }
 function tornTxt(t) {
   if (!t) return 'Sense torn';
@@ -343,6 +390,7 @@ async function inici() {
 }
 
 function pintaLogin(msg) {
+  document.body.classList.remove('fit');
   var email = llegeix('te_email') || '';
   document.getElementById('modal').innerHTML = '';
   document.getElementById('app').innerHTML =
@@ -463,6 +511,7 @@ var pintant = 0;
 async function pintaVista() {
   var el = document.getElementById('vista'); if (!el) return;
   var id = ++pintant;
+  document.body.classList.toggle('fit', S.vista === 'horari');
   var fn = { horari: vHorari, sollicituds: vSollicituds, planificacio: vPlanificacio, documents: vDocuments, configuracio: vConfiguracio }[S.vista] || vHorari;
   try {
     var html = await fn();
@@ -495,21 +544,24 @@ async function vHorari() {
     }).join('') + '</div>' : '';
     var etiquetes = (k === avui() ? '<span class="tag" style="background:var(--verd);color:#fff">AVUI</span>' : '') +
       (pendents[k] ? '<span class="tag pendent">CANVI PENDENT</span>' : '');
-    files += '<button class="dia' + (treball ? '' : ' festa') + (k === avui() ? ' avui' : '') + '" data-act="nova-sol" data-data="' + k + '" aria-label="' + esc(dataLlarga(k) + ': ' + tornTxt(t) + '. Demanar un canvi') + '">' +
+    files += '<button class="dia' + (treball ? '' : ' festa') + (k === avui() ? ' avui' : '') + (pendents[k] ? ' pend' : '') + '" data-act="nova-sol" data-data="' + k + '" aria-label="' + esc(dataLlarga(k) + ': ' + tornTxt(t) + '. Demanar un canvi') + '">' +
       '<span class="num"><small>' + DIES[i] + '</small><b>' + d.getDate() + '</b></span>' +
-      '<span class="mig"><span class="row" style="flex-wrap:wrap"><span class="hores">' + esc(t ? tornTxt(t) : 'Sense torn assignat') + '</span>' + etiquetes + '</span>' + barra +
+      '<span class="mig"><span class="row" style="flex-wrap:wrap"><span class="hores">' + horesHtml(t) + '</span>' + etiquetes + '</span>' + barra +
         (t && t.nota ? '<span class="nota">' + esc(t.nota) + '</span>' : '') + '</span>' +
       '<span class="tot">' + (m ? horesTxt(m) : '') + '</span></button>';
   }
+  var hiHaPend = false;
+  for (var j = 0; j < 7; j++) { if (pendents[ymd(addDays(ini, j))]) hiHaPend = true; }
   var esAquesta = ymd(ini) === ymd(dilluns(new Date()));
   return '<div class="cap"><div><span class="hint">Hola, ' + esc(S.me.nom.split(' ')[0]) + '</span><h1>El meu horari</h1></div></div>' +
     '<div class="setmana"><button class="icon-btn" data-act="setmana" data-dir="-1" aria-label="Setmana anterior">' + ICO.esq + '</button>' +
     '<div class="t"><b>' + esc(rangSetmana(ini)) + '</b><span>' + (esAquesta ? 'Aquesta setmana' : ini > new Date() ? 'Properament' : 'Setmana passada') + '</span></div>' +
     '<button class="icon-btn" data-act="setmana" data-dir="1" aria-label="Setmana següent">' + ICO.dre + '</button></div>' +
     '<div class="resum"><span><b style="color:var(--tinta)">' + horesTxt(total) + '</b> previstes</span><span><b style="color:var(--tinta)">' + dies + '</b> dies de treball</span>' +
+    (hiHaPend ? '<span class="llegenda-pend"><i></i>Canvi pendent</span>' : '') +
     (esAquesta ? '' : '<button class="btn small" data-act="setmana" data-dir="0">Tornar a avui</button>') + '</div>' +
-    files +
-    '<p class="hint" style="margin:0">Toca un dia per demanar un canvi.</p>';
+    '<div class="dies">' + files + '</div>' +
+    '<p class="hint peu-horari" style="margin:0">Toca un dia per demanar un canvi.</p>';
 }
 
 /* =====================================================================
@@ -659,7 +711,7 @@ async function omplirTornActual() {
   var data = document.getElementById('ns-data'); if (!data) return;
   var r = await sb.from('torns').select('*').eq('treballador_id', S.me.id).eq('data', data.value).maybeSingle();
   var t = r.data;
-  var el = document.getElementById('ns-actual'); if (el) el.textContent = 'Torn actual: ' + (t ? tornTxt(t) : 'sense torn assignat');
+  var el = document.getElementById('ns-actual'); if (el) el.textContent = 'Torn actual: ' + (t ? tornTxt(t) : 'sense torn assignat') + (t && t.nota ? ' · Nota: ' + t.nota : '');
   var def = t && t.tipus === 'treball' ? t : { entrada: '09:00', inici_pausa: '13:00', fi_pausa: '16:00', sortida: '20:00' };
   [['ns-e', 'entrada'], ['ns-s', 'sortida'], ['ns-ip', 'inici_pausa'], ['ns-fp', 'fi_pausa']].forEach(function (p) {
     var i = document.getElementById(p[0]); if (i) i.value = hm5(def[p[1]]);
