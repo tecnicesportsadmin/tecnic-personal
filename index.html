@@ -1,0 +1,1257 @@
+<!doctype html>
+<html lang="ca">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1F4D3A">
+<meta name="robots" content="noindex, nofollow">
+<title>Tècnic Esports · Personal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --verd:#1F4D3A; --verd-fosc:#163828; --verd-clar:#E3EEE7; --fons:#F4F5F2; --tinta:#1B2421;
+  --gris:#4D5752; --gris2:#3F4944; --linia:#DDE2DC; --linia2:#C9CFC9; --suau:#ECEFEB;
+  --accent:#C2501F; --accent-text:#9C3E15;
+  --ok-t:#1F5B3A; --ok-b:#DFF2E6; --warn-t:#7A4B00; --warn-b:#FFF1D6; --ko-t:#9B2C22; --ko-b:#FBE3E1;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--fons);color:var(--tinta);font-family:Inter,system-ui,sans-serif;font-size:15px;-webkit-text-size-adjust:100%}
+h1,h2,h3{font-family:'Space Grotesk',Inter,sans-serif;font-weight:600;margin:0}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--verd)}
+.hidden{display:none!important}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* Botons i camps */
+.btn{min-height:44px;padding:0 16px;border-radius:12px;border:1.5px solid var(--linia2);background:#fff;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;text-decoration:none;color:var(--tinta)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.prim{background:var(--verd);border-color:var(--verd);color:#fff}
+.btn.prim:hover:not(:disabled){background:var(--verd-fosc)}
+.btn.ko{color:var(--ko-t)}
+.btn.full{width:100%}
+.btn.small{min-height:36px;padding:0 12px;font-size:13px;border-radius:10px}
+.icon-btn{width:44px;height:44px;border:0;background:transparent;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:var(--tinta)}
+.icon-btn:hover{background:var(--suau)}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label,.lbl{font-size:14px;font-weight:600}
+.inp{min-height:48px;border:1.5px solid var(--linia2);border-radius:12px;padding:0 14px;background:#fff;width:100%}
+textarea.inp{padding:12px 14px;resize:vertical;min-height:72px}
+.inp:focus,.btn:focus-visible,.icon-btn:focus-visible{outline:3px solid #8FB9A3;outline-offset:1px}
+.hint{font-size:13px;color:var(--gris)}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:4px;background:#E3E7E2;border-radius:12px;padding:4px}
+.seg button{min-height:42px;border:0;border-radius:9px;background:transparent;font-weight:600;font-size:13px;cursor:pointer;color:var(--gris2)}
+.seg button[aria-pressed="true"]{background:#fff;color:var(--verd);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{height:36px;padding:0 14px;border-radius:18px;border:1px solid var(--linia2);background:#fff;font-weight:600;font-size:13px;cursor:pointer;color:var(--gris2)}
+.chip[aria-pressed="true"]{background:var(--tinta);border-color:var(--tinta);color:#fff}
+
+/* Etiquetes */
+.tag{font-size:12px;font-weight:700;border-radius:8px;padding:4px 8px;white-space:nowrap;display:inline-block}
+.tag.pendent{color:var(--warn-t);background:var(--warn-b)}
+.tag.aprovada,.tag.ok{color:var(--ok-t);background:var(--ok-b)}
+.tag.rebutjada,.tag.ko{color:var(--ko-t);background:var(--ko-b)}
+.tag.cancellada,.tag.neutre{color:var(--gris2);background:var(--suau)}
+.tag.nou{color:#fff;background:var(--accent)}
+.msg-box{font-size:13px;font-weight:600;border-radius:10px;padding:9px 12px}
+.msg-box.ok{color:var(--ok-t);background:var(--ok-b)}
+.msg-box.ko{color:var(--ko-t);background:var(--ko-b)}
+.msg-box.warn{color:var(--warn-t);background:var(--warn-b)}
+
+/* Estructura */
+#app{min-height:100vh;display:flex;flex-direction:column}
+.topbar{background:var(--verd);color:#fff;position:sticky;top:0;z-index:20}
+.topbar-in{max-width:1280px;margin:0 auto;padding:10px 16px;padding-top:max(10px,env(safe-area-inset-top));display:flex;align-items:center;gap:12px}
+.marca{display:flex;align-items:center;gap:8px;font-family:'Space Grotesk',sans-serif;font-weight:700;letter-spacing:.12em;font-size:13px}
+.avatar{width:38px;height:38px;border-radius:19px;background:#fff;color:var(--verd);border:0;font-weight:700;cursor:pointer;margin-left:auto;display:flex;align-items:center;justify-content:center}
+.topnav{display:none;gap:4px}
+.topnav a{padding:9px 14px;border-radius:10px;color:#fff;text-decoration:none;font-weight:500;font-size:14px;display:flex;align-items:center;gap:6px}
+.topnav a[aria-current="page"]{background:rgba(255,255,255,.16);font-weight:700}
+main.view{flex:1;width:100%;max-width:640px;margin:0 auto;padding:18px 16px 110px;display:flex;flex-direction:column;gap:14px}
+main.view.wide{max-width:1280px}
+.bottomnav{position:fixed;left:0;right:0;bottom:0;z-index:20;background:#fff;border-top:1px solid var(--linia);display:grid;grid-auto-flow:column;grid-auto-columns:1fr;padding:6px 8px max(10px,env(safe-area-inset-bottom))}
+.bottomnav a{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:52px;text-decoration:none;color:var(--gris);font-size:11.5px;font-weight:500}
+.bottomnav a[aria-current="page"]{color:var(--verd);font-weight:700}
+.badge{min-width:18px;height:18px;border-radius:9px;background:var(--accent);color:#fff;font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;padding:0 5px}
+.bottomnav .badge{position:absolute;top:2px;left:calc(50% + 6px)}
+@media (min-width:900px){
+  .topnav{display:flex}
+  .bottomnav{display:none}
+  main.view{padding-bottom:40px}
+  .avatar{margin-left:12px}
+  .topnav{margin-left:auto}
+}
+.cap{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.cap h1{font-size:26px}
+.sec-title{margin:6px 0 0;font-family:Inter,sans-serif;font-size:12.5px;font-weight:700;letter-spacing:.06em;color:var(--gris);text-transform:uppercase}
+.card{background:#fff;border:1px solid var(--linia);border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:8px}
+.card.link{cursor:pointer;text-align:left;width:100%;font:inherit;color:inherit}
+.card.link:hover{border-color:var(--linia2)}
+.card.alerta{border:2px solid var(--accent)}
+.row{display:flex;align-items:center;gap:8px}
+.between{justify-content:space-between}
+.buit{padding:28px 16px;text-align:center;color:var(--gris);background:#fff;border:1px dashed var(--linia2);border-radius:16px}
+
+/* Horari */
+.setmana{display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid var(--linia);border-radius:14px;padding:4px}
+.setmana .t{display:flex;flex-direction:column;align-items:center}
+.setmana .t b{font-size:16px}.setmana .t span{font-size:12px;color:var(--gris)}
+.resum{display:flex;gap:16px;font-size:13px;color:var(--gris2);flex-wrap:wrap}
+.dia{display:flex;align-items:center;gap:12px;min-height:60px;padding:8px 14px 8px 8px;border-radius:14px;background:#fff;border:1px solid var(--linia);cursor:pointer;width:100%;text-align:left}
+.dia.festa{background:var(--suau);border:1px dashed var(--linia2)}
+.dia.avui{border:2px solid var(--verd)}
+.dia .num{width:42px;flex:0 0 auto;display:flex;flex-direction:column;align-items:center}
+.dia .num small{font-size:12px;font-weight:600;color:var(--gris);text-transform:uppercase}
+.dia .num b{font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:600}
+.dia .mig{flex:1;min-width:0;display:flex;flex-direction:column;gap:7px}
+.dia .hores{font-size:14px;font-weight:600}
+.dia.festa .hores{font-weight:500;color:var(--gris)}
+.dia .tot{font-size:14px;font-weight:600;color:var(--gris2)}
+.barra{position:relative;height:8px;border-radius:4px;background:#E3E7E2}
+.barra span{position:absolute;top:0;bottom:0;border-radius:4px;background:var(--verd)}
+.nota{font-size:12.5px;color:var(--gris2)}
+
+/* Missatges */
+.fil{display:flex;flex-direction:column;gap:12px}
+.bombolla{display:flex;flex-direction:column;gap:4px;max-width:85%}
+.bombolla .qui{font-size:12px;font-weight:600;color:var(--gris)}
+.bombolla .txt{border-radius:16px;padding:10px 14px;line-height:1.4;white-space:pre-wrap;word-wrap:break-word}
+.bombolla .quan{font-size:11px;color:var(--gris)}
+.bombolla.meu{align-self:flex-end;align-items:flex-end}
+.bombolla.meu .txt{background:var(--verd);color:#fff;border-radius:16px 16px 4px 16px}
+.bombolla.altre{align-self:flex-start}
+.bombolla.altre .txt{background:#fff;border:1px solid var(--linia);border-radius:16px 16px 16px 4px}
+.sistema{align-self:center;font-size:12px;color:var(--gris);background:#E7EBE6;border-radius:10px;padding:4px 10px}
+
+/* Planificació */
+.taula-wrap{overflow-x:auto;background:#fff;border:1px solid var(--linia);border-radius:16px}
+.taula{min-width:1060px}
+.tr{display:grid;grid-template-columns:170px repeat(7,minmax(112px,1fr)) 64px;border-bottom:1px solid #ECEFEB}
+.tr.cap-t{background:#F8F9F7;border-bottom:1px solid var(--linia)}
+.tr .th{padding:12px 8px;font-size:13px;font-weight:700;text-align:center}
+.tr .th.nomcol{text-align:left;padding-left:16px;font-size:12px;color:var(--gris);text-transform:uppercase;letter-spacing:.05em}
+.tr .nom{padding:10px 16px;font-size:14px;font-weight:600;display:flex;align-items:center}
+.tr .td{padding:5px}
+.tr .tot{display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
+.cel{width:100%;min-height:54px;border-radius:10px;padding:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;font-size:12px;border:1px solid #A9C7B4;background:var(--verd-clar)}
+.cel b{font-size:12px;font-weight:600}
+.cel.festa{background:var(--suau);border:1px dashed #A3ABA6;color:var(--gris)}
+.cel.buida{background:#fff;border:1px dashed var(--linia2);color:#8A938E;font-size:20px}
+.cel.pend{background:var(--warn-b);border:1.5px solid #D9A441}
+.llegenda{display:flex;flex-wrap:wrap;gap:16px;font-size:13px;color:var(--gris2)}
+.llegenda i{display:inline-block;width:14px;height:14px;border-radius:4px;vertical-align:-2px;margin-right:6px}
+
+/* Documents */
+.doc{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--linia);border-radius:14px;padding:10px 8px 10px 12px}
+.doc .ico{width:40px;height:40px;flex:0 0 auto;border-radius:10px;display:flex;align-items:center;justify-content:center}
+.doc .ico.nomina{background:var(--verd-clar);color:var(--verd)}
+.doc .ico.contracte{background:#FBE9DF;color:var(--accent-text)}
+.doc .ico.altres{background:#E7EBE6;color:var(--gris2)}
+.doc .info{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.doc .info b{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.doc .info span{font-size:13px;color:var(--gris)}
+.privat{display:flex;gap:10px;align-items:center;padding:12px 14px;background:var(--verd);color:#fff;border-radius:12px;font-size:13px;line-height:1.4}
+
+/* Full modal */
+.sheet-bg{position:fixed;inset:0;background:rgba(20,28,25,.45);z-index:50;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--fons);width:100%;max-width:640px;max-height:94vh;border-radius:22px 22px 0 0;display:flex;flex-direction:column;overflow:hidden}
+@media (min-width:700px){.sheet-bg{align-items:center}.sheet{border-radius:22px;max-height:88vh}}
+.sheet-cap{display:flex;align-items:center;gap:6px;padding:12px 10px 10px 8px;background:#fff;border-bottom:1px solid var(--linia)}
+.sheet-cap h2{font-size:19px;flex:1}
+.sheet-cos{padding:16px;overflow-y:auto;display:flex;flex-direction:column;gap:14px;flex:1}
+.sheet-peu{padding:10px 12px max(14px,env(safe-area-inset-bottom));background:#fff;border-top:1px solid var(--linia);display:flex;gap:8px;align-items:center}
+
+/* Accés */
+.login{min-height:100vh;background:var(--verd);display:flex;flex-direction:column}
+.login .dalt{color:#fff;padding:64px 28px 36px;display:flex;flex-direction:column;gap:12px;max-width:520px;width:100%;margin:0 auto}
+.login .dalt h1{font-size:32px;line-height:1.1}
+.login form{flex:1;background:var(--fons);border-radius:28px 28px 0 0;padding:30px 28px 40px;display:flex;flex-direction:column;gap:20px}
+.login form>*{max-width:464px;width:100%;margin-left:auto;margin-right:auto}
+.pin{letter-spacing:.6em;font-size:26px;font-weight:700;text-align:center;min-height:58px}
+
+/* Avisos */
+#toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);z-index:80;background:var(--tinta);color:#fff;padding:12px 18px;border-radius:12px;font-weight:600;font-size:14px;max-width:92vw;box-shadow:0 6px 24px rgba(0,0,0,.2)}
+#toast.ko{background:var(--ko-t)}
+.carregant{padding:40px;text-align:center;color:var(--gris)}
+</style>
+</head>
+<body>
+<div id="app"><div class="carregant">Carregant…</div></div>
+<div id="modal"></div>
+<div id="toast" class="hidden" role="status" aria-live="polite"></div>
+
+<script>
+'use strict';
+/* =====================================================================
+   CONFIGURACIÓ — omplir amb les dades del projecte Supabase de Tècnic
+   (Settings → API Keys). La clau "publishable" és pública per disseny:
+   la seguretat la posen les regles RLS de la base de dades.
+   ===================================================================== */
+var SUPABASE_URL = 'https://sunahbfnwhjjtxiajfpz.supabase.co/rest/v1/';
+var SUPABASE_KEY = 'sb_publishable_LQdIiGbdGCdKb5_tTUFJCQ_ogggQgOv';
+
+/* Ha de ser IDÈNTIC a la funció de servidor gestio-usuaris */
+function pinAContrasenya(pin) { return 'TE-' + pin + '-personal'; }
+
+/* =====================================================================
+   UTILITATS
+   ===================================================================== */
+var DIES = ['Dl', 'Dt', 'Dc', 'Dj', 'Dv', 'Ds', 'Dg'];
+var DIES_LLARGS = ['dilluns', 'dimarts', 'dimecres', 'dijous', 'divendres', 'dissabte', 'diumenge'];
+var MESOS = ['gener', 'febrer', 'març', 'abril', 'maig', 'juny', 'juliol', 'agost', 'setembre', 'octubre', 'novembre', 'desembre'];
+var MESOS_CURTS = ['gen', 'febr', 'març', 'abr', 'maig', 'juny', 'jul', 'ag', 'set', 'oct', 'nov', 'des'];
+var TIPUS_SOL = { canvi_horari: 'Canvi d’horari', dia_lliure: 'Dia lliure', intercanvi: 'Intercanvi' };
+var ESTATS = { pendent: 'Pendent', aprovada: 'Aprovada', rebutjada: 'Rebutjada', cancellada: 'Cancel·lada' };
+var TIPUS_TORN = { treball: 'Treball', festa: 'Festa', vacances: 'Vacances', absencia: 'Absència' };
+var TIPUS_DOC = { nomina: 'Nòmina', contracte: 'Contracte', altres: 'Altres' };
+var ROLS = { treballador: 'Treballador/a', supervisor: 'Supervisor/a', admin: 'Administrador/a' };
+
+function esc(v) {
+  return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+  });
+}
+function pad(n) { return (n < 10 ? '0' : '') + n; }
+function ymd(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+function parseYmd(s) { var p = s.split('-').map(Number); return new Date(p[0], p[1] - 1, p[2]); }
+function addDays(d, n) { var x = new Date(d.getFullYear(), d.getMonth(), d.getDate()); x.setDate(x.getDate() + n); return x; }
+function dilluns(d) { var x = new Date(d.getFullYear(), d.getMonth(), d.getDate()); x.setDate(x.getDate() - ((x.getDay() + 6) % 7)); return x; }
+function avui() { return ymd(new Date()); }
+function dw(d) { return (d.getDay() + 6) % 7; }
+function deMes(m) { var n = MESOS[m]; return /^[aeiou]/.test(n) ? 'd’' + n : 'de ' + n; }
+function dataCurta(s) { var d = parseYmd(s); return DIES[dw(d)] + ' ' + d.getDate() + ' ' + MESOS_CURTS[d.getMonth()]; }
+function dataLlarga(s) { var d = parseYmd(s); return DIES_LLARGS[dw(d)] + ' ' + d.getDate() + ' ' + deMes(d.getMonth()); }
+function rangSetmana(ini) {
+  var fi = addDays(ini, 6);
+  if (ini.getMonth() === fi.getMonth()) return ini.getDate() + ' – ' + fi.getDate() + ' ' + deMes(fi.getMonth());
+  return ini.getDate() + ' ' + MESOS_CURTS[ini.getMonth()] + ' – ' + fi.getDate() + ' ' + MESOS_CURTS[fi.getMonth()];
+}
+function hm(t) { if (!t) return ''; var p = String(t).split(':'); return parseInt(p[0], 10) + ':' + p[1]; }
+function hm5(t) { if (!t) return ''; var p = String(t).split(':'); return pad(parseInt(p[0], 10)) + ':' + p[1]; }
+function minuts(t) { if (!t) return null; var p = String(t).split(':'); return parseInt(p[0], 10) * 60 + parseInt(p[1], 10); }
+function horesTxt(min) { var h = min / 60; return (Math.round(h * 10) / 10).toString().replace('.', ',') + ' h'; }
+function quan(ts) {
+  var d = new Date(ts), ara = new Date();
+  var hora = pad(d.getHours()) + ':' + pad(d.getMinutes());
+  if (ymd(d) === ymd(ara)) return 'Avui, ' + hora;
+  if (ymd(d) === ymd(addDays(ara, -1))) return 'Ahir, ' + hora;
+  return d.getDate() + ' ' + MESOS_CURTS[d.getMonth()] + ', ' + hora;
+}
+function inicials(nom) { return String(nom || '?').split(/\s+/).filter(Boolean).slice(0, 2).map(function (p) { return p[0].toUpperCase(); }).join(''); }
+
+/* Torn: text, minuts treballats i trams */
+function trams(t) {
+  if (!t || t.tipus !== 'treball' || !t.entrada) return [];
+  if (t.inici_pausa && t.fi_pausa) return [[t.entrada, t.inici_pausa], [t.fi_pausa, t.sortida]];
+  return [[t.entrada, t.sortida]];
+}
+function tornTxt(t) {
+  if (!t) return 'Sense torn';
+  if (t.tipus !== 'treball') return TIPUS_TORN[t.tipus] || t.tipus;
+  return trams(t).map(function (x) { return hm(x[0]) + '–' + hm(x[1]); }).join(' · ');
+}
+function tornMinuts(t) { return trams(t).reduce(function (a, x) { return a + minuts(x[1]) - minuts(x[0]); }, 0); }
+
+/* Mateixa regla que la base de dades: pausa entre 1 i 3 hores */
+function validaHores(e, ip, fp, s) {
+  if (!e || !s) return { ok: false, msg: 'Cal l’hora d’entrada i de sortida.' };
+  var me = minuts(e), ms = minuts(s);
+  if (!(me < ms)) return { ok: false, msg: 'La sortida ha de ser després de l’entrada.' };
+  if (!ip && !fp) return { ok: true, msg: 'Jornada sense pausa · ' + horesTxt(ms - me) + ' de treball' };
+  if (!ip || !fp) return { ok: false, msg: 'Indica l’inici i el final de la pausa (o cap dels dos).' };
+  var mi = minuts(ip), mf = minuts(fp);
+  if (!(me < mi && mi < mf && mf < ms)) return { ok: false, msg: 'La pausa ha d’estar dins de la jornada.' };
+  var p = mf - mi;
+  var pt = Math.floor(p / 60) + ' h' + (p % 60 ? ' ' + (p % 60) + ' min' : '');
+  if (p < 60 || p > 180) return { ok: false, msg: 'La pausa per dinar ha de durar entre 1 i 3 hores (ara ' + pt + ').' };
+  return { ok: true, msg: 'Pausa de ' + pt + ' · ' + horesTxt(ms - me - p) + ' de treball' };
+}
+
+var ICO = {
+  cal: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>',
+  swap: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 7h11l-3-3M17 17H6l3 3"/></svg>',
+  doc: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg>',
+  grid: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>',
+  cog: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>',
+  esq: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>',
+  dre: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>',
+  tanca: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  mes: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
+  envia: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>',
+  baixa: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>',
+  pany: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>',
+  paperera: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>',
+  fitxer: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg>',
+  muntanya: '<svg width="26" height="26" viewBox="0 0 44 44" fill="none" aria-hidden="true"><path d="M4 36 L17 14 L24 25 L29 18 L40 36 Z" stroke="#fff" stroke-width="2.6" stroke-linejoin="round"/></svg>'
+};
+
+var toastTimer = null;
+function toast(msg, ko) {
+  var t = document.getElementById('toast');
+  t.textContent = msg; t.className = ko ? 'ko' : '';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function () { t.className = 'hidden'; }, ko ? 5000 : 2800);
+}
+function errMsg(e) {
+  var m = (e && (e.message || e.error_description || e.error)) || 'Error inesperat';
+  if (/row-level security|permission denied/i.test(m)) return 'No tens permís per fer això.';
+  if (/check constraint "torn_hores_valides"|sollicitud_coherent|plantilla_hores_valides/.test(m)) return 'Les hores no són vàlides (la pausa ha de ser d’1 a 3 h).';
+  if (/duplicate key/.test(m)) return 'Aquest registre ja existeix.';
+  if (/Failed to fetch|NetworkError/i.test(m)) return 'Sense connexió. Torna-ho a provar.';
+  return m;
+}
+function guarda(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* sense emmagatzematge */ } }
+function llegeix(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+
+/* =====================================================================
+   ESTAT
+   ===================================================================== */
+var sb = null;
+var S = {
+  user: null, me: null, dir: {}, vista: 'horari',
+  setmana: dilluns(new Date()), setmanaPlan: dilluns(addDays(new Date(), 7)),
+  filtreDocs: 'tots', filtreTreb: '', badges: { sol: 0 }, canal: null, modal: null, intents: 0, bloqueigFins: 0
+};
+function esSup() { return S.me && (S.me.rol === 'supervisor' || S.me.rol === 'admin'); }
+function esAdmin() { return S.me && S.me.rol === 'admin'; }
+function gestionaDocs() { return S.me && (S.me.rol === 'admin' || S.me.gestiona_documents); }
+function nom(id) { return (S.dir[id] && S.dir[id].nom) || (S.me && id === S.me.id ? S.me.nom : 'Usuari'); }
+
+function pestanyes() {
+  var p = [{ id: 'horari', txt: 'Horari', ico: ICO.cal }, { id: 'sollicituds', txt: 'Sol·licituds', ico: ICO.swap, badge: true }];
+  if (esSup()) p.push({ id: 'planificacio', txt: 'Planificació', ico: ICO.grid });
+  p.push({ id: 'documents', txt: 'Documents', ico: ICO.doc });
+  if (esAdmin()) p.push({ id: 'configuracio', txt: 'Configuració', ico: ICO.cog });
+  return p;
+}
+
+/* =====================================================================
+   INICI I SESSIÓ
+   ===================================================================== */
+async function inici() {
+  if (!window.supabase || /EL-TEU-PROJECTE/.test(SUPABASE_URL)) {
+    document.getElementById('app').innerHTML = '<div class="carregant">Falta configurar SUPABASE_URL i SUPABASE_KEY a index.html.</div>';
+    return;
+  }
+  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  var r = await sb.auth.getSession();
+  if (r.data && r.data.session) await entra(r.data.session.user); else pintaLogin();
+  sb.auth.onAuthStateChange(function (ev) { if (ev === 'SIGNED_OUT') { surt(true); } });
+  window.addEventListener('hashchange', function () { var v = location.hash.slice(1); if (S.me && v && v !== S.vista) { S.vista = v; pinta(); } });
+}
+
+function pintaLogin(msg) {
+  var email = llegeix('te_email') || '';
+  document.getElementById('modal').innerHTML = '';
+  document.getElementById('app').innerHTML =
+    '<div class="login"><div class="dalt">' +
+      '<svg width="44" height="44" viewBox="0 0 44 44" fill="none" aria-hidden="true"><path d="M4 36 L17 14 L24 25 L29 18 L40 36 Z" stroke="#fff" stroke-width="2.4" stroke-linejoin="round"/><path d="M14.5 18.5 L17 14 L19.6 18.2" stroke="#F2B48F" stroke-width="2.4" stroke-linejoin="round"/></svg>' +
+      '<div class="marca">TÈCNIC ESPORTS</div><h1>Horaris i documents de l’equip</h1></div>' +
+    '<form data-form="login" novalidate>' +
+      '<div class="field"><label for="l-email">Correu electrònic</label><input id="l-email" class="inp" type="email" autocomplete="username" required value="' + esc(email) + '"></div>' +
+      '<div class="field"><label for="l-pin">PIN de 4 xifres</label><input id="l-pin" class="inp pin" type="password" inputmode="numeric" autocomplete="current-password" maxlength="4" pattern="[0-9]{4}" required></div>' +
+      '<div id="l-err" class="msg-box ko' + (msg ? '' : ' hidden') + '" role="alert">' + esc(msg || '') + '</div>' +
+      '<button class="btn prim full" type="submit" style="min-height:54px;font-size:17px">Entrar</button>' +
+      '<p class="hint" style="text-align:center;margin:0">Has oblidat el PIN? Demana a l’administrador que te’l canviï.</p>' +
+    '</form></div>';
+  var f = document.getElementById(email ? 'l-pin' : 'l-email'); if (f) f.focus();
+}
+
+async function login(form) {
+  var err = document.getElementById('l-err');
+  function mostra(m) { err.textContent = m; err.classList.remove('hidden'); }
+  if (Date.now() < S.bloqueigFins) return mostra('Massa intents. Espera ' + Math.ceil((S.bloqueigFins - Date.now()) / 1000) + ' segons.');
+  var email = form.querySelector('#l-email').value.trim().toLowerCase();
+  var pin = form.querySelector('#l-pin').value.trim();
+  if (!email || !/^\d{4}$/.test(pin)) return mostra('Escriu el teu email i un PIN de 4 xifres.');
+  var btn = form.querySelector('button[type=submit]'); btn.disabled = true; btn.textContent = 'Entrant…';
+  var r = await sb.auth.signInWithPassword({ email: email, password: pinAContrasenya(pin) });
+  btn.disabled = false; btn.textContent = 'Entrar';
+  if (r.error) {
+    S.intents++;
+    if (S.intents >= 5) { S.bloqueigFins = Date.now() + 30000; S.intents = 0; }
+    if (r.error.status === 429) return mostra('Massa intents. Espera uns minuts.');
+    if (/banned/i.test(r.error.message)) return mostra('Aquest usuari està desactivat.');
+    return mostra('Email o PIN incorrectes.');
+  }
+  S.intents = 0;
+  guarda('te_email', email);
+  await entra(r.data.user);
+}
+
+async function entra(user) {
+  S.user = user;
+  var r = await sb.from('perfils').select('*').eq('id', user.id).maybeSingle();
+  if (r.error || !r.data || !r.data.actiu) {
+    await sb.auth.signOut();
+    return pintaLogin(r.error ? errMsg(r.error) : 'Aquest usuari no està actiu. Parla amb l’administrador.');
+  }
+  S.me = r.data;
+  await carregaDirectori();
+  var v = location.hash.slice(1);
+  S.vista = pestanyes().some(function (p) { return p.id === v; }) ? v : (esSup() ? 'sollicituds' : 'horari');
+  subscriu();
+  pinta();
+}
+
+async function carregaDirectori() {
+  var r = await sb.rpc('directori');
+  S.dir = {};
+  (r.data || []).forEach(function (p) { S.dir[p.id] = p; });
+}
+
+async function surt(jaFet) {
+  if (S.canal) { try { sb.removeChannel(S.canal); } catch (e) { /* res */ } S.canal = null; }
+  S.me = null; S.user = null; S.modal = null;
+  if (!jaFet) await sb.auth.signOut();
+  history.replaceState(null, '', location.pathname);
+  pintaLogin();
+}
+
+function subscriu() {
+  if (S.canal) sb.removeChannel(S.canal);
+  S.canal = sb.channel('canvis-' + S.me.id)
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'missatges' }, function (p) { nouMissatge(p.new); })
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'sollicituds' }, function () { refrescaSuau(); })
+    .subscribe();
+}
+var refrescTimer = null;
+function refrescaSuau() {
+  clearTimeout(refrescTimer);
+  refrescTimer = setTimeout(function () {
+    calculaBadges();
+    if (!S.modal && (S.vista === 'sollicituds' || S.vista === 'horari' || S.vista === 'planificacio')) pintaVista();
+  }, 400);
+}
+
+/* =====================================================================
+   PINTAR L'ESTRUCTURA
+   ===================================================================== */
+function pinta() {
+  var tabs = pestanyes();
+  var links = function (cls) {
+    return tabs.map(function (t) {
+      var b = t.badge && S.badges.sol ? '<span class="badge" aria-label="' + S.badges.sol + ' pendents">' + S.badges.sol + '</span>' : '';
+      return '<a href="#' + t.id + '"' + (S.vista === t.id ? ' aria-current="page"' : '') + '>' + (cls === 'b' ? t.ico : '') + esc(t.txt) + b + '</a>';
+    }).join('');
+  };
+  document.getElementById('app').innerHTML =
+    '<header class="topbar"><div class="topbar-in">' +
+      '<div class="marca">' + ICO.muntanya + '<span>TÈCNIC ESPORTS</span></div>' +
+      '<nav class="topnav" aria-label="Seccions">' + links('t') + '</nav>' +
+      '<button class="avatar" data-act="perfil" aria-label="El meu compte: ' + esc(S.me.nom) + '">' + esc(inicials(S.me.nom)) + '</button>' +
+    '</div></header>' +
+    '<main class="view' + (S.vista === 'planificacio' ? ' wide' : '') + '" id="vista"><div class="carregant">Carregant…</div></main>' +
+    '<nav class="bottomnav" aria-label="Seccions">' + links('b') + '</nav>';
+  if (location.hash.slice(1) !== S.vista) history.replaceState(null, '', '#' + S.vista);
+  pintaVista();
+  calculaBadges();
+}
+function actualitzaBadges() {
+  document.querySelectorAll('a[href="#sollicituds"]').forEach(function (a) {
+    var b = a.querySelector('.badge');
+    if (S.badges.sol) {
+      if (!b) { b = document.createElement('span'); b.className = 'badge'; a.appendChild(b); }
+      b.textContent = S.badges.sol; b.setAttribute('aria-label', S.badges.sol + ' pendents');
+    } else if (b) b.remove();
+  });
+}
+
+var pintant = 0;
+async function pintaVista() {
+  var el = document.getElementById('vista'); if (!el) return;
+  var id = ++pintant;
+  var fn = { horari: vHorari, sollicituds: vSollicituds, planificacio: vPlanificacio, documents: vDocuments, configuracio: vConfiguracio }[S.vista] || vHorari;
+  try {
+    var html = await fn();
+    if (id !== pintant) return; /* una pintada més nova ja ha començat */
+    el.innerHTML = html;
+  } catch (e) {
+    if (id === pintant) el.innerHTML = '<div class="buit">No s’ha pogut carregar: ' + esc(errMsg(e)) + '<br><br><button class="btn" data-act="recarrega">Torna-ho a provar</button></div>';
+  }
+}
+function q(r) { if (r.error) throw r.error; return r.data; }
+
+/* =====================================================================
+   VISTA: EL MEU HORARI
+   ===================================================================== */
+async function vHorari() {
+  var ini = S.setmana, fi = addDays(ini, 6);
+  var torns = q(await sb.from('torns').select('*').eq('treballador_id', S.me.id).gte('data', ymd(ini)).lte('data', ymd(fi)));
+  var pend = q(await sb.from('sollicituds').select('data,data_retorn').eq('treballador_id', S.me.id).eq('estat', 'pendent'));
+  var perData = {}; torns.forEach(function (t) { perData[t.data] = t; });
+  var pendents = {}; pend.forEach(function (s) { pendents[s.data] = 1; if (s.data_retorn) pendents[s.data_retorn] = 1; });
+  var total = 0, dies = 0, files = '';
+  for (var i = 0; i < 7; i++) {
+    var d = addDays(ini, i), k = ymd(d), t = perData[k], m = tornMinuts(t);
+    total += m; if (m) dies++;
+    var treball = t && t.tipus === 'treball';
+    var barra = treball ? '<div class="barra">' + trams(t).map(function (x) {
+      var a = minuts(x[0]), b = minuts(x[1]);
+      var l = Math.max(0, (a - 540) / 660 * 100), w = Math.max(2, (b - a) / 660 * 100);
+      return '<span style="left:' + l.toFixed(1) + '%;width:' + Math.min(w, 100 - l).toFixed(1) + '%"></span>';
+    }).join('') + '</div>' : '';
+    var etiquetes = (k === avui() ? '<span class="tag" style="background:var(--verd);color:#fff">AVUI</span>' : '') +
+      (pendents[k] ? '<span class="tag pendent">CANVI PENDENT</span>' : '');
+    files += '<button class="dia' + (treball ? '' : ' festa') + (k === avui() ? ' avui' : '') + '" data-act="nova-sol" data-data="' + k + '" aria-label="' + esc(dataLlarga(k) + ': ' + tornTxt(t) + '. Demanar un canvi') + '">' +
+      '<span class="num"><small>' + DIES[i] + '</small><b>' + d.getDate() + '</b></span>' +
+      '<span class="mig"><span class="row" style="flex-wrap:wrap"><span class="hores">' + esc(t ? tornTxt(t) : 'Sense torn assignat') + '</span>' + etiquetes + '</span>' + barra +
+        (t && t.nota ? '<span class="nota">' + esc(t.nota) + '</span>' : '') + '</span>' +
+      '<span class="tot">' + (m ? horesTxt(m) : '') + '</span></button>';
+  }
+  var esAquesta = ymd(ini) === ymd(dilluns(new Date()));
+  return '<div class="cap"><div><span class="hint">Hola, ' + esc(S.me.nom.split(' ')[0]) + '</span><h1>El meu horari</h1></div></div>' +
+    '<div class="setmana"><button class="icon-btn" data-act="setmana" data-dir="-1" aria-label="Setmana anterior">' + ICO.esq + '</button>' +
+    '<div class="t"><b>' + esc(rangSetmana(ini)) + '</b><span>' + (esAquesta ? 'Aquesta setmana' : ini > new Date() ? 'Properament' : 'Setmana passada') + '</span></div>' +
+    '<button class="icon-btn" data-act="setmana" data-dir="1" aria-label="Setmana següent">' + ICO.dre + '</button></div>' +
+    '<div class="resum"><span><b style="color:var(--tinta)">' + horesTxt(total) + '</b> previstes</span><span><b style="color:var(--tinta)">' + dies + '</b> dies de treball</span>' +
+    (esAquesta ? '' : '<button class="btn small" data-act="setmana" data-dir="0">Tornar a avui</button>') + '</div>' +
+    files +
+    '<p class="hint" style="margin:0">Toca un dia per demanar un canvi.</p>';
+}
+
+/* =====================================================================
+   VISTA: SOL·LICITUDS
+   ===================================================================== */
+async function dadesSollicituds() {
+  var cols = '*';
+  var meves = q(await sb.from('sollicituds').select(cols).eq('treballador_id', S.me.id).order('creada_el', { ascending: false }).limit(60));
+  var perRespondre = q(await sb.from('sollicituds').select(cols).eq('company_id', S.me.id).eq('estat', 'pendent').is('company_accepta', null));
+  var perResoldre = esSup() ? q(await sb.from('sollicituds').select(cols).eq('estat', 'pendent').neq('treballador_id', S.me.id).order('data')) : [];
+  return { meves: meves, perRespondre: perRespondre, perResoldre: perResoldre };
+}
+async function noLlegits(ids) {
+  if (!ids.length) return {};
+  var msgs = q(await sb.from('missatges').select('sollicitud_id,autor_id,creat_el').in('sollicitud_id', ids).neq('autor_id', S.me.id).order('creat_el', { ascending: false }).limit(1000));
+  var lect = q(await sb.from('lectures').select('sollicitud_id,llegit_el').in('sollicitud_id', ids));
+  var ll = {}; lect.forEach(function (l) { ll[l.sollicitud_id] = l.llegit_el; });
+  var res = {};
+  msgs.forEach(function (m) { if (!ll[m.sollicitud_id] || new Date(m.creat_el) > new Date(ll[m.sollicitud_id])) res[m.sollicitud_id] = (res[m.sollicitud_id] || 0) + 1; });
+  return res;
+}
+async function calculaBadges() {
+  try {
+    var d = await dadesSollicituds();
+    var ids = d.meves.filter(function (s) { return s.estat === 'pendent' || new Date(s.resolta_el || s.creada_el) > addDays(new Date(), -14); }).map(function (s) { return s.id; });
+    var nl = await noLlegits(ids);
+    var n = d.perRespondre.length + d.perResoldre.filter(function (s) { return s.tipus !== 'intercanvi' || s.company_accepta === true; }).length + Object.keys(nl).length;
+    S.badges.sol = n; actualitzaBadges();
+  } catch (e) { /* silenciós */ }
+}
+
+function descSol(s, punt) {
+  if (s.tipus === 'canvi_horari') return dataCurta(s.data) + ' · ' + tornTxt({ tipus: 'treball', entrada: s.entrada, inici_pausa: s.inici_pausa, fi_pausa: s.fi_pausa, sortida: s.sortida });
+  if (s.tipus === 'dia_lliure') return dataLlarga(s.data);
+  var altre = punt === 'company' ? nom(s.treballador_id) : nom(s.company_id);
+  return dataCurta(s.data) + (s.data_retorn ? ' i ' + dataCurta(s.data_retorn) : '') + ' · amb ' + altre;
+}
+
+async function vSollicituds() {
+  var d = await dadesSollicituds();
+  var ids = d.meves.map(function (s) { return s.id; }).concat(d.perResoldre.map(function (s) { return s.id; }), d.perRespondre.map(function (s) { return s.id; }));
+  var nl = await noLlegits(ids);
+  var html = '<div class="cap"><h1>Sol·licituds</h1><button class="btn prim" data-act="nova-sol">' + ICO.mes + 'Nova</button></div>';
+
+  if (d.perRespondre.length) {
+    html += '<h2 class="sec-title">Esperen la teva resposta</h2>';
+    d.perRespondre.forEach(function (s) {
+      html += '<div class="card alerta"><div class="row between"><b>' + esc(nom(s.treballador_id)) + ' et proposa un intercanvi</b><span class="hint">' + esc(quan(s.creada_el)) + '</span></div>' +
+        '<span>' + esc(descSol(s, 'company')) + '</span>' + (s.motiu ? '<span class="hint">«' + esc(s.motiu) + '»</span>' : '') +
+        '<button class="btn prim" data-act="fil" data-id="' + s.id + '">Veure i respondre</button></div>';
+    });
+  }
+
+  if (esSup()) {
+    html += '<h2 class="sec-title">Per resoldre (' + d.perResoldre.length + ')</h2>';
+    if (!d.perResoldre.length) html += '<div class="buit">No hi ha res pendent.</div>';
+    var avisos = await avisosDiaLliure(d.perResoldre);
+    d.perResoldre.forEach(function (s) {
+      var esperant = s.tipus === 'intercanvi' && s.company_accepta !== true;
+      html += '<button class="card link" data-act="fil" data-id="' + s.id + '"><div class="row between"><b>' + esc(nom(s.treballador_id)) + '</b><span class="tag neutre">' + esc(TIPUS_SOL[s.tipus]) + '</span></div>' +
+        '<span>' + esc(descSol(s)) + '</span>' +
+        '<span class="row" style="flex-wrap:wrap">' +
+          (esperant ? '<span class="tag pendent">Esperant que ' + esc(nom(s.company_id)) + ' accepti</span>' : s.tipus === 'intercanvi' ? '<span class="tag ok">' + esc(nom(s.company_id)) + ' ha acceptat</span>' : '') +
+          (avisos[s.id] ? '<span class="tag pendent">' + esc(avisos[s.id]) + '</span>' : '') +
+          (nl[s.id] ? '<span class="tag nou">' + nl[s.id] + ' missatge' + (nl[s.id] > 1 ? 's' : '') + ' nou' + (nl[s.id] > 1 ? 's' : '') + '</span>' : '') +
+        '</span></button>';
+    });
+  }
+
+  html += '<h2 class="sec-title">Les meves</h2>';
+  if (!d.meves.length) html += '<div class="buit">Encara no has fet cap sol·licitud.<br>Toca un dia del teu horari o el botó «Nova».</div>';
+  d.meves.forEach(function (s) {
+    var resolta = s.resolta_per && s.estat !== 'cancellada' ? (s.estat === 'aprovada' ? 'Aprovada per ' : 'Rebutjada per ') + nom(s.resolta_per) : 'Enviada ' + quan(s.creada_el).toLowerCase();
+    if (s.tipus === 'intercanvi' && s.estat === 'pendent') resolta = s.company_accepta ? nom(s.company_id) + ' ha acceptat · falta el supervisor' : 'Esperant resposta de ' + nom(s.company_id);
+    html += '<button class="card link" data-act="fil" data-id="' + s.id + '"><div class="row between"><b>' + esc(TIPUS_SOL[s.tipus]) + '</b><span class="tag ' + s.estat + '">' + esc(ESTATS[s.estat]) + '</span></div>' +
+      '<span>' + esc(descSol(s)) + '</span><div class="row between"><span class="hint">' + esc(resolta) + '</span>' +
+      (nl[s.id] ? '<span class="tag nou">' + nl[s.id] + ' nou' + (nl[s.id] > 1 ? 's' : '') + '</span>' : '') + '</div></button>';
+  });
+  return html;
+}
+
+/* Avís per al supervisor: quanta gent ja no treballa aquell dia */
+async function avisosDiaLliure(llista) {
+  var dl = llista.filter(function (s) { return s.tipus === 'dia_lliure'; });
+  if (!dl.length) return {};
+  var dates = dl.map(function (s) { return s.data; });
+  var t = q(await sb.from('torns').select('data,tipus,treballador_id').in('data', dates).neq('tipus', 'treball'));
+  var c = {}; t.forEach(function (x) { c[x.data] = (c[x.data] || 0) + 1; });
+  var r = {};
+  dl.forEach(function (s) { var n = c[s.data] || 0; if (n >= 2) r[s.id] = 'Aquell dia ja no treballen ' + n + ' persones'; });
+  return r;
+}
+
+/* =====================================================================
+   FULLS MODALS
+   ===================================================================== */
+function obreModal(html, onClose) {
+  S.modal = { onClose: onClose };
+  document.getElementById('modal').innerHTML = '<div class="sheet-bg" data-act="fons"><div class="sheet" role="dialog" aria-modal="true">' + html + '</div></div>';
+  document.body.style.overflow = 'hidden';
+  var f = document.querySelector('#modal [autofocus]') || document.querySelector('#modal .sheet-cap .icon-btn');
+  if (f) f.focus();
+}
+function tancaModal(refresca) {
+  var cb = S.modal && S.modal.onClose;
+  S.modal = null;
+  document.getElementById('modal').innerHTML = '';
+  document.body.style.overflow = '';
+  if (cb) cb();
+  if (refresca) { pintaVista(); calculaBadges(); }
+}
+function capModal(titol, extra) {
+  return '<div class="sheet-cap"><button class="icon-btn" data-act="tanca" aria-label="Tancar">' + ICO.tanca + '</button><h2>' + esc(titol) + '</h2>' + (extra || '') + '</div>';
+}
+
+/* ---------- Nova sol·licitud ---------- */
+async function modalNovaSol(dataIni) {
+  var data = dataIni && dataIni >= avui() ? dataIni : ymd(addDays(new Date(), 1));
+  var companys = Object.keys(S.dir).filter(function (id) { return id !== S.me.id && S.dir[id].rol !== 'admin'; })
+    .map(function (id) { return '<option value="' + id + '">' + esc(S.dir[id].nom) + '</option>'; }).join('');
+  obreModal(capModal('Nova sol·licitud') +
+    '<form class="sheet-cos" data-form="nova-sol" novalidate>' +
+      '<div class="seg" role="group" aria-label="Tipus de sol·licitud">' +
+        '<button type="button" data-act="tipus-sol" data-t="canvi_horari" aria-pressed="true">Canvi d’horari</button>' +
+        '<button type="button" data-act="tipus-sol" data-t="dia_lliure" aria-pressed="false">Dia lliure</button>' +
+        '<button type="button" data-act="tipus-sol" data-t="intercanvi" aria-pressed="false">Intercanvi</button></div>' +
+      '<input type="hidden" name="tipus" value="canvi_horari">' +
+      '<div class="field"><label for="ns-data">Dia</label><input id="ns-data" name="data" class="inp" type="date" min="' + avui() + '" value="' + data + '" data-change="ns-data"><span class="hint" id="ns-actual">…</span></div>' +
+      '<fieldset id="ns-canvi" class="card" style="margin:0"><legend class="lbl" style="padding:0 6px">Horari que proposes</legend><div class="grid2">' +
+        '<div class="field"><label for="ns-e">Entrada</label><input id="ns-e" name="entrada" class="inp" type="time" step="900" data-change="ns-hores"></div>' +
+        '<div class="field"><label for="ns-s">Sortida</label><input id="ns-s" name="sortida" class="inp" type="time" step="900" data-change="ns-hores"></div>' +
+        '<div class="field"><label for="ns-ip">Inici pausa dinar</label><input id="ns-ip" name="inici_pausa" class="inp" type="time" step="900" data-change="ns-hores"></div>' +
+        '<div class="field"><label for="ns-fp">Fi pausa dinar</label><input id="ns-fp" name="fi_pausa" class="inp" type="time" step="900" data-change="ns-hores"></div>' +
+      '</div><div id="ns-val" class="msg-box ok" role="status"></div></fieldset>' +
+      '<p id="ns-lliure" class="card hidden" style="margin:0">Si s’aprova, aquest dia quedarà com a <b>Festa</b> al teu horari.</p>' +
+      '<div id="ns-inter" class="card hidden">' +
+        '<div class="field"><label for="ns-comp">Amb qui?</label><select id="ns-comp" name="company_id" class="inp"><option value="">Tria un company…</option>' + companys + '</select></div>' +
+        '<div class="field"><label for="ns-ret">I a canvi, el dia… <span class="hint">(opcional)</span></label><input id="ns-ret" name="data_retorn" class="inp" type="date" min="' + avui() + '"></div>' +
+        '<span class="hint">S’intercanvien els torns d’aquests dies. Primer ho ha d’acceptar el company i després un supervisor.</span></div>' +
+      '<div class="field"><label for="ns-motiu">Motiu <span class="hint">(opcional)</span></label><textarea id="ns-motiu" name="motiu" class="inp" maxlength="1000" rows="2"></textarea></div>' +
+      '<div id="ns-err" class="msg-box ko hidden" role="alert"></div>' +
+      '<button class="btn prim full" type="submit" style="min-height:52px">Enviar al supervisor</button>' +
+    '</form>');
+  await omplirTornActual();
+}
+async function omplirTornActual() {
+  var data = document.getElementById('ns-data'); if (!data) return;
+  var r = await sb.from('torns').select('*').eq('treballador_id', S.me.id).eq('data', data.value).maybeSingle();
+  var t = r.data;
+  var el = document.getElementById('ns-actual'); if (el) el.textContent = 'Torn actual: ' + (t ? tornTxt(t) : 'sense torn assignat');
+  var def = t && t.tipus === 'treball' ? t : { entrada: '09:00', inici_pausa: '13:00', fi_pausa: '16:00', sortida: '20:00' };
+  [['ns-e', 'entrada'], ['ns-s', 'sortida'], ['ns-ip', 'inici_pausa'], ['ns-fp', 'fi_pausa']].forEach(function (p) {
+    var i = document.getElementById(p[0]); if (i) i.value = hm5(def[p[1]]);
+  });
+  validaNovaSol();
+}
+function validaNovaSol() {
+  var v = validaHores(val('ns-e'), val('ns-ip'), val('ns-fp'), val('ns-s'));
+  var el = document.getElementById('ns-val'); if (!el) return v;
+  el.textContent = v.msg; el.className = 'msg-box ' + (v.ok ? 'ok' : 'ko');
+  return v;
+}
+function E(form, n) { return form.elements[n]; }
+function val(id) { var e = document.getElementById(id); return e ? e.value : ''; }
+
+async function enviaNovaSol(form) {
+  var tipus = E(form, 'tipus').value, err = document.getElementById('ns-err');
+  function mostra(m) { err.textContent = m; err.classList.remove('hidden'); }
+  err.classList.add('hidden');
+  var fila = { treballador_id: S.me.id, tipus: tipus, data: E(form, 'data').value, motiu: E(form, 'motiu').value.trim() || null };
+  if (!fila.data || fila.data < avui()) return mostra('Tria un dia a partir d’avui.');
+  if (tipus === 'canvi_horari') {
+    var v = validaNovaSol(); if (!v.ok) return mostra(v.msg);
+    fila.entrada = E(form, 'entrada').value; fila.sortida = E(form, 'sortida').value;
+    fila.inici_pausa = E(form, 'inici_pausa').value || null; fila.fi_pausa = E(form, 'fi_pausa').value || null;
+  }
+  if (tipus === 'intercanvi') {
+    if (!E(form, 'company_id').value) return mostra('Tria amb qui vols fer l’intercanvi.');
+    fila.company_id = E(form, 'company_id').value;
+    fila.data_retorn = E(form, 'data_retorn').value || null;
+    if (fila.data_retorn && fila.data_retorn === fila.data) return mostra('El dia de tornada ha de ser diferent.');
+  }
+  var btn = form.querySelector('button[type=submit]'); btn.disabled = true;
+  var r = await sb.from('sollicituds').insert(fila);
+  btn.disabled = false;
+  if (r.error) return mostra(errMsg(r.error));
+  tancaModal();
+  toast('Sol·licitud enviada');
+  if (S.vista !== 'sollicituds') location.hash = 'sollicituds'; else { pintaVista(); calculaBadges(); }
+}
+
+/* ---------- Fil d'una sol·licitud ---------- */
+async function modalFil(id) {
+  obreModal(capModal('Carregant…') + '<div class="sheet-cos"><div class="carregant">Carregant…</div></div>');
+  S.modal.fil = id;
+  try { await pintaFil(id); } catch (e) { toast(errMsg(e), true); tancaModal(); }
+}
+async function pintaFil(id) {
+  var s = q(await sb.from('sollicituds').select('*').eq('id', id).single());
+  var msgs = q(await sb.from('missatges').select('*').eq('sollicitud_id', id).order('creat_el'));
+  var comparativa = '';
+  if (s.tipus === 'intercanvi') {
+    var det = q(await sb.rpc('detall_intercanvi', { p_id: id }));
+    var dates = [s.data].concat(s.data_retorn ? [s.data_retorn] : []);
+    comparativa = dates.map(function (dt) {
+      var a = det.filter(function (t) { return t.data === dt && t.treballador_id === s.treballador_id; })[0];
+      var b = det.filter(function (t) { return t.data === dt && t.treballador_id === s.company_id; })[0];
+      return '<div class="card" style="gap:4px"><b>' + esc(dataLlarga(dt)) + '</b>' +
+        '<span class="hint">' + esc(nom(s.treballador_id)) + ': ' + esc(a ? tornTxt(a) : 'sense torn') + ' → ' + esc(b ? tornTxt(b) : 'sense torn') + '</span>' +
+        '<span class="hint">' + esc(nom(s.company_id)) + ': ' + esc(b ? tornTxt(b) : 'sense torn') + ' → ' + esc(a ? tornTxt(a) : 'sense torn') + '</span></div>';
+    }).join('');
+  } else {
+    var actual = q(await sb.from('torns').select('*').eq('treballador_id', s.treballador_id).eq('data', s.data).maybeSingle());
+    var nou = s.tipus === 'dia_lliure' ? 'Festa' : tornTxt({ tipus: 'treball', entrada: s.entrada, inici_pausa: s.inici_pausa, fi_pausa: s.fi_pausa, sortida: s.sortida });
+    comparativa = '<div class="grid2"><div class="card" style="gap:3px;background:var(--fons)"><span class="hint">Ara · ' + esc(dataCurta(s.data)) + '</span><b style="color:var(--gris)">' + esc(actual ? tornTxt(actual) : 'Sense torn') + '</b></div>' +
+      '<div class="card" style="gap:3px;background:var(--verd-clar);border-color:#A9C7B4"><span class="hint" style="color:var(--ok-t)">Demana</span><b style="color:var(--verd)">' + esc(nou) + '</b></div></div>';
+  }
+  var fil = '<span class="sistema">' + esc(quan(s.creada_el)) + ' · ' + esc(nom(s.treballador_id)) + ' envia la sol·licitud</span>';
+  if (s.motiu) fil += bombolla({ autor_id: s.treballador_id, text: 'Motiu: ' + s.motiu, creat_el: s.creada_el });
+  msgs.forEach(function (m) { fil += bombolla(m); });
+  if (s.tipus === 'intercanvi' && s.company_accepta !== null) fil += '<span class="sistema">' + esc(nom(s.company_id)) + (s.company_accepta ? ' ha acceptat l’intercanvi' : ' ha rebutjat l’intercanvi') + '</span>';
+  if (s.estat !== 'pendent') fil += '<span class="sistema">' + esc(ESTATS[s.estat]) + (s.resolta_el ? ' · ' + esc(quan(s.resolta_el)) : '') + (s.resolta_per && s.estat !== 'cancellada' ? ' · ' + esc(nom(s.resolta_per)) : '') + '</span>';
+
+  var accions = '';
+  if (s.estat === 'pendent') {
+    if (s.tipus === 'intercanvi' && s.company_id === S.me.id && s.company_accepta === null) {
+      accions = '<div class="grid2"><button class="btn ko" data-act="resp-inter" data-id="' + id + '" data-ok="0">Rebutjar</button><button class="btn prim" data-act="resp-inter" data-id="' + id + '" data-ok="1">Acceptar l’intercanvi</button></div>';
+    } else if (esSup() && s.treballador_id !== S.me.id) {
+      var bloq = s.tipus === 'intercanvi' && s.company_accepta !== true;
+      accions = (bloq ? '<div class="msg-box warn">Falta que ' + esc(nom(s.company_id)) + ' accepti l’intercanvi.</div>' : '') +
+        '<div class="grid2"><button class="btn ko" data-act="resol" data-id="' + id + '" data-ok="0">Rebutjar</button><button class="btn prim" data-act="resol" data-id="' + id + '" data-ok="1"' + (bloq ? ' disabled' : '') + '>Aprovar</button></div>' +
+        '<span class="hint">Si escrius un missatge abans, s’enviarà com a comentari de la decisió.</span>';
+    }
+    if (s.treballador_id === S.me.id) accions += '<button class="btn small ko" data-act="cancella" data-id="' + id + '">Cancel·lar la sol·licitud</button>';
+  }
+
+  var html = capModal(TIPUS_SOL[s.tipus] + (s.treballador_id !== S.me.id ? ' · ' + nom(s.treballador_id) : ''), '<span class="tag ' + s.estat + '" style="margin-right:8px">' + esc(ESTATS[s.estat]) + '</span>') +
+    '<div class="sheet-cos" id="fil-cos">' + comparativa + accions + '<div class="fil" id="fil-msgs">' + fil + '</div></div>' +
+    '<form class="sheet-peu" data-form="missatge" data-id="' + id + '"><label for="fil-txt" class="sr">Escriu un missatge</label>' +
+      '<input id="fil-txt" class="inp" style="border-radius:24px" maxlength="2000" placeholder="Escriu un missatge…" autocomplete="off">' +
+      '<button class="btn prim" type="submit" aria-label="Enviar" style="width:48px;min-height:48px;padding:0;border-radius:24px">' + ICO.envia + '</button></form>';
+  if (!S.modal || S.modal.fil !== id) return;
+  document.querySelector('#modal .sheet').innerHTML = html;
+  baixaFil();
+  marcaLlegit(id);
+}
+function bombolla(m) {
+  var meu = m.autor_id === S.me.id;
+  var qui = meu ? 'Tu' : nom(m.autor_id) + (S.dir[m.autor_id] && S.dir[m.autor_id].rol !== 'treballador' ? ' · ' + (S.dir[m.autor_id].rol === 'admin' ? 'Admin' : 'Supervisió') : '');
+  return '<div class="bombolla ' + (meu ? 'meu' : 'altre') + '"><span class="qui">' + esc(qui) + '</span><div class="txt">' + esc(m.text) + '</div><span class="quan">' + esc(quan(m.creat_el)) + '</span></div>';
+}
+function baixaFil() { var c = document.getElementById('fil-cos'); if (c) c.scrollTop = c.scrollHeight; }
+async function marcaLlegit(id) {
+  await sb.from('lectures').upsert({ sollicitud_id: id, perfil_id: S.me.id, llegit_el: new Date().toISOString() }, { onConflict: 'sollicitud_id,perfil_id' });
+  calculaBadges();
+}
+function nouMissatge(m) {
+  if (S.modal && S.modal.fil === m.sollicitud_id) {
+    var box = document.getElementById('fil-msgs');
+    if (box && !document.querySelector('[data-msg="' + m.id + '"]')) {
+      box.insertAdjacentHTML('beforeend', bombolla(m).replace('<div class="bombolla', '<div data-msg="' + esc(m.id) + '" class="bombolla'));
+      baixaFil(); marcaLlegit(m.sollicitud_id);
+    }
+  } else if (m.autor_id !== S.me.id) {
+    toast('Missatge nou de ' + nom(m.autor_id));
+    refrescaSuau();
+  }
+}
+async function enviaMissatge(form) {
+  var inp = form.querySelector('#fil-txt'), text = inp.value.trim(), id = form.getAttribute('data-id');
+  if (!text) return;
+  inp.disabled = true;
+  var r = await sb.from('missatges').insert({ sollicitud_id: id, autor_id: S.me.id, text: text }).select().single();
+  inp.disabled = false;
+  if (r.error) return toast(errMsg(r.error), true);
+  inp.value = ''; inp.focus();
+  nouMissatge(r.data);
+}
+
+/* =====================================================================
+   VISTA: PLANIFICACIÓ (supervisors)
+   ===================================================================== */
+async function vPlanificacio() {
+  var ini = S.setmanaPlan, fi = addDays(ini, 6);
+  var torns = q(await sb.from('torns').select('*').gte('data', ymd(ini)).lte('data', ymd(fi)));
+  var pend = q(await sb.from('sollicituds').select('treballador_id,company_id,data,data_retorn').eq('estat', 'pendent'));
+  var persones = Object.keys(S.dir).filter(function (id) { return S.dir[id].rol !== 'admin' || torns.some(function (t) { return t.treballador_id === id; }); })
+    .sort(function (a, b) { return S.dir[a].nom.localeCompare(S.dir[b].nom, 'ca'); });
+  var mapa = {}; torns.forEach(function (t) { mapa[t.treballador_id + '|' + t.data] = t; });
+  var pmap = {}; pend.forEach(function (s) {
+    [s.data, s.data_retorn].forEach(function (d) { if (d) { pmap[s.treballador_id + '|' + d] = 1; if (s.company_id) pmap[s.company_id + '|' + d] = 1; } });
+  });
+  var compte = [0, 0, 0, 0, 0, 0, 0];
+  var cap = '<div class="tr cap-t" role="row"><span class="th nomcol" role="columnheader">Persona</span>';
+  for (var i = 0; i < 7; i++) { var d = addDays(ini, i); cap += '<span class="th" role="columnheader">' + DIES[i] + ' ' + d.getDate() + '</span>'; }
+  cap += '<span class="th nomcol" role="columnheader" style="text-align:center;padding-left:8px">Total</span></div>';
+  var files = persones.map(function (pid) {
+    var tot = 0;
+    var cels = '';
+    for (var i = 0; i < 7; i++) {
+      var k = ymd(addDays(ini, i)), t = mapa[pid + '|' + k], m = tornMinuts(t);
+      tot += m; if (m) compte[i]++;
+      var cls = 'cel' + (!t ? ' buida' : t.tipus !== 'treball' ? ' festa' : '') + (pmap[pid + '|' + k] ? ' pend' : '');
+      var inner = !t ? '+' : t.tipus !== 'treball' ? esc(TIPUS_TORN[t.tipus]) : trams(t).map(function (x) { return '<b>' + hm(x[0]) + '–' + hm(x[1]) + '</b>'; }).join('');
+      cels += '<div class="td" role="cell"><button class="' + cls + '" data-act="cel" data-p="' + pid + '" data-d="' + k + '" aria-label="' + esc(S.dir[pid].nom + ', ' + dataLlarga(k) + ': ' + (t ? tornTxt(t) : 'sense torn') + (pmap[pid + '|' + k] ? ', sol·licitud pendent' : '')) + '">' + inner + '</button></div>';
+    }
+    return '<div class="tr" role="row"><span class="nom" role="rowheader">' + esc(S.dir[pid].nom) + '</span>' + cels + '<span class="tot" role="cell">' + (tot ? horesTxt(tot) : '–') + '</span></div>';
+  }).join('');
+  var peu = '<div class="tr" role="row" style="background:#F8F9F7;border-bottom:0"><span class="nom" role="rowheader" style="font-weight:500;color:var(--gris2)">Persones treballant</span>' +
+    compte.map(function (n) { return '<span class="th" role="cell" style="color:' + (n < 3 ? 'var(--accent-text)' : 'var(--ok-t)') + '">' + n + '</span>'; }).join('') + '<span></span></div>';
+  return '<div class="cap"><h1>Setmana del ' + esc(rangSetmana(ini)) + '</h1>' +
+    '<div class="row" style="flex-wrap:wrap"><button class="icon-btn" style="border:1px solid var(--linia2);background:#fff" data-act="setmana-plan" data-dir="-1" aria-label="Setmana anterior">' + ICO.esq + '</button>' +
+    '<button class="icon-btn" style="border:1px solid var(--linia2);background:#fff" data-act="setmana-plan" data-dir="1" aria-label="Setmana següent">' + ICO.dre + '</button>' +
+    '<button class="btn" data-act="copia-setmana">Copiar setmana anterior</button></div></div>' +
+    (persones.length ? '<div class="taula-wrap"><div class="taula" role="table" aria-label="Horari de l’equip">' + cap + files + peu + '</div></div>' : '<div class="buit">Encara no hi ha cap persona. Dona-les d’alta a Configuració.</div>') +
+    '<div class="llegenda"><span><i style="background:var(--verd-clar);border:1px solid #A9C7B4"></i>Treball</span><span><i style="background:var(--suau);border:1px dashed #A3ABA6"></i>Festa / vacances / absència</span><span><i style="background:var(--warn-b);border:1.5px solid #D9A441"></i>Sol·licitud pendent</span><span>Toca una cel·la per editar-la. Els canvis es veuen a l’instant.</span></div>';
+}
+
+async function modalCel(pid, data) {
+  var t = q(await sb.from('torns').select('*').eq('treballador_id', pid).eq('data', data).maybeSingle());
+  var pl = q(await sb.from('plantilles').select('*').order('ordre').order('nom'));
+  S.plantilles = pl;
+  var tp = t ? t.tipus : 'treball';
+  var def = t && t.tipus === 'treball' ? t : (pl[0] || { entrada: '09:00', inici_pausa: '13:00', fi_pausa: '16:00', sortida: '20:00' });
+  obreModal(capModal(S.dir[pid].nom + ' · ' + dataCurta(data)) +
+    '<form class="sheet-cos" data-form="cel" data-p="' + pid + '" data-d="' + data + '" novalidate>' +
+      '<div class="seg" role="group" aria-label="Tipus de dia">' + Object.keys(TIPUS_TORN).map(function (k) {
+        return '<button type="button" data-act="tipus-cel" data-t="' + k + '" aria-pressed="' + (k === tp) + '">' + TIPUS_TORN[k] + '</button>'; }).join('') + '</div>' +
+      '<input type="hidden" name="tipus" value="' + tp + '">' +
+      '<div id="cel-hores" class="card' + (tp === 'treball' ? '' : ' hidden') + '" style="gap:12px">' +
+        (pl.length ? '<div class="chips" aria-label="Plantilles">' + pl.map(function (p, i) { return '<button type="button" class="chip" data-act="plantilla" data-i="' + i + '">' + esc(p.nom) + ' <span style="font-weight:500">' + esc(tornTxt(Object.assign({ tipus: 'treball' }, p))) + '</span></button>'; }).join('') + '</div>' : '') +
+        '<div class="grid2">' +
+        '<div class="field"><label for="c-e">Entrada</label><input id="c-e" name="entrada" class="inp" type="time" step="900" value="' + hm5(def.entrada) + '" data-change="cel-hores"></div>' +
+        '<div class="field"><label for="c-s">Sortida</label><input id="c-s" name="sortida" class="inp" type="time" step="900" value="' + hm5(def.sortida) + '" data-change="cel-hores"></div>' +
+        '<div class="field"><label for="c-ip">Inici pausa</label><input id="c-ip" name="inici_pausa" class="inp" type="time" step="900" value="' + hm5(def.inici_pausa) + '" data-change="cel-hores"></div>' +
+        '<div class="field"><label for="c-fp">Fi pausa</label><input id="c-fp" name="fi_pausa" class="inp" type="time" step="900" value="' + hm5(def.fi_pausa) + '" data-change="cel-hores"></div></div>' +
+        '<div id="cel-val" class="msg-box ok" role="status"></div></div>' +
+      '<div class="field"><label for="c-nota">Nota per al treballador <span class="hint">(opcional)</span></label><input id="c-nota" name="nota" class="inp" maxlength="200" value="' + esc(t && t.nota || '') + '"></div>' +
+      '<div id="cel-err" class="msg-box ko hidden" role="alert"></div>' +
+      '<div class="grid2">' + (t ? '<button type="button" class="btn ko" data-act="esborra-cel" data-p="' + pid + '" data-d="' + data + '">' + ICO.paperera + 'Treure</button>' : '<span></span>') +
+      '<button class="btn prim" type="submit">Desar</button></div>' +
+    '</form>');
+  validaCel();
+}
+function validaCel() {
+  var v = validaHores(val('c-e'), val('c-ip'), val('c-fp'), val('c-s'));
+  var el = document.getElementById('cel-val'); if (el) { el.textContent = v.msg; el.className = 'msg-box ' + (v.ok ? 'ok' : 'ko'); }
+  return v;
+}
+async function desaCel(form) {
+  var tipus = E(form, 'tipus').value, err = document.getElementById('cel-err');
+  var fila = { treballador_id: form.getAttribute('data-p'), data: form.getAttribute('data-d'), tipus: tipus, nota: E(form, 'nota').value.trim() || null,
+    entrada: null, inici_pausa: null, fi_pausa: null, sortida: null };
+  if (tipus === 'treball') {
+    var v = validaCel(); if (!v.ok) { err.textContent = v.msg; err.classList.remove('hidden'); return; }
+    fila.entrada = E(form, 'entrada').value; fila.sortida = E(form, 'sortida').value;
+    fila.inici_pausa = E(form, 'inici_pausa').value || null; fila.fi_pausa = E(form, 'fi_pausa').value || null;
+  }
+  var r = await sb.from('torns').upsert(fila, { onConflict: 'treballador_id,data' });
+  if (r.error) { err.textContent = errMsg(r.error); err.classList.remove('hidden'); return; }
+  tancaModal(true); toast('Desat');
+}
+async function copiaSetmana() {
+  var ini = S.setmanaPlan, prev = addDays(ini, -7);
+  if (!confirm('Copiar els torns de la setmana del ' + rangSetmana(prev) + ' a aquesta?\nNomés s’ompliran els dies que estiguin buits.')) return;
+  var ant = q(await sb.from('torns').select('*').gte('data', ymd(prev)).lte('data', ymd(addDays(prev, 6))));
+  if (!ant.length) return toast('La setmana anterior està buida', true);
+  var files = ant.map(function (t) {
+    return { treballador_id: t.treballador_id, data: ymd(addDays(parseYmd(t.data), 7)), tipus: t.tipus, entrada: t.entrada, inici_pausa: t.inici_pausa, fi_pausa: t.fi_pausa, sortida: t.sortida };
+  });
+  var r = await sb.from('torns').upsert(files, { onConflict: 'treballador_id,data', ignoreDuplicates: true });
+  if (r.error) return toast(errMsg(r.error), true);
+  toast('Setmana copiada'); pintaVista();
+}
+
+/* =====================================================================
+   VISTA: DOCUMENTS
+   ===================================================================== */
+async function vDocuments() {
+  var meus = q(await sb.from('documents').select('*').eq('treballador_id', S.me.id).order('pujat_el', { ascending: false }));
+  var f = S.filtreDocs;
+  var llista = meus.filter(function (d) { return f === 'tots' || d.tipus === f; });
+  var html = '<div class="cap"><h1>' + (gestionaDocs() ? 'Documents' : 'Els meus documents') + '</h1></div>';
+  html += '<div class="privat">' + ICO.pany + '<span>Privat: només tu i l’administració podeu veure els teus documents.</span></div>';
+  if (gestionaDocs()) html += '<h2 class="sec-title">Els meus</h2>';
+  html += '<div class="chips" role="group" aria-label="Filtrar">' + [['tots', 'Tots'], ['nomina', 'Nòmines'], ['contracte', 'Contracte'], ['altres', 'Altres']].map(function (c) {
+    return '<button class="chip" data-act="filtre-docs" data-f="' + c[0] + '" aria-pressed="' + (f === c[0]) + '">' + c[1] + '</button>'; }).join('') + '</div>';
+  html += llista.length ? llista.map(function (d) { return filaDoc(d, false); }).join('') : '<div class="buit">No hi ha documents' + (f !== 'tots' ? ' d’aquest tipus' : '') + '.</div>';
+
+  if (gestionaDocs()) {
+    var opcions = Object.keys(S.dir).sort(function (a, b) { return S.dir[a].nom.localeCompare(S.dir[b].nom, 'ca'); })
+      .map(function (id) { return '<option value="' + id + '"' + (S.filtreTreb === id ? ' selected' : '') + '>' + esc(S.dir[id].nom) + '</option>'; }).join('');
+    var consulta = sb.from('documents').select('*').order('pujat_el', { ascending: false }).limit(200);
+    if (S.filtreTreb) consulta = consulta.eq('treballador_id', S.filtreTreb);
+    var tots = q(await consulta);
+    var ara = new Date();
+    html += '<h2 class="sec-title" style="margin-top:14px">Gestió de documents</h2>' +
+      '<form class="card" data-form="puja" novalidate style="gap:12px"><b>Pujar un document</b>' +
+        '<div class="field"><label for="d-treb">Per a</label><select id="d-treb" name="treb" class="inp" required><option value="">Tria una persona…</option>' + opcions + '</select></div>' +
+        '<div class="grid2"><div class="field"><label for="d-tipus">Tipus</label><select id="d-tipus" name="tipus" class="inp" data-change="doc-titol">' +
+          '<option value="nomina">Nòmina</option><option value="contracte">Contracte</option><option value="altres">Altres</option></select></div>' +
+        '<div class="field" id="d-mes-f"><label for="d-mes">Mes</label><input id="d-mes" name="mes" class="inp" type="month" value="' + ara.getFullYear() + '-' + pad(ara.getMonth() + 1) + '" data-change="doc-titol"></div></div>' +
+        '<div class="field"><label for="d-titol">Títol</label><input id="d-titol" name="titol" class="inp" maxlength="200" required></div>' +
+        '<div class="field"><label for="d-fitxer">Fitxer PDF (màx. 10 MB)</label><input id="d-fitxer" name="fitxer" class="inp" type="file" accept="application/pdf" required style="padding-top:12px"></div>' +
+        '<div id="d-err" class="msg-box ko hidden" role="alert"></div>' +
+        '<button class="btn prim" type="submit">Pujar</button></form>' +
+      '<div class="row between" style="flex-wrap:wrap"><b>Documents pujats</b><label class="sr" for="d-filtre">Filtrar per persona</label>' +
+        '<select id="d-filtre" class="inp" style="width:auto;min-height:40px" data-change="filtre-treb"><option value="">Tothom</option>' + opcions + '</select></div>' +
+      (tots.length ? tots.map(function (d) { return filaDoc(d, true); }).join('') : '<div class="buit">Encara no s’ha pujat cap document.</div>');
+  }
+  setTimeout(titolDoc, 0);
+  return html;
+}
+function filaDoc(d, gestio) {
+  var meta = gestio
+    ? nom(d.treballador_id) + ' · ' + quan(d.pujat_el) + ' · ' + (d.vist_el ? 'vist ' + quan(d.vist_el).toLowerCase() : 'no vist encara')
+    : 'PDF · pujat el ' + parseYmd(d.pujat_el.slice(0, 10)).getDate() + ' ' + MESOS_CURTS[parseYmd(d.pujat_el.slice(0, 10)).getMonth()];
+  return '<div class="doc"><span class="ico ' + esc(d.tipus) + '">' + ICO.fitxer + '</span>' +
+    '<span class="info"><span class="row"><b>' + esc(d.titol) + '</b>' + (!gestio && !d.vist_el ? '<span class="tag nou">NOU</span>' : '') + '</span><span>' + esc(meta) + '</span></span>' +
+    '<button class="icon-btn" style="background:var(--fons);color:var(--verd)" data-act="obre-doc" data-id="' + d.id + '" data-path="' + esc(d.storage_path) + '" data-meu="' + (d.treballador_id === S.me.id ? 1 : 0) + '" data-vist="' + (d.vist_el ? 1 : 0) + '" aria-label="Obrir ' + esc(d.titol) + '">' + ICO.baixa + '</button>' +
+    (gestio ? '<button class="icon-btn" style="color:var(--ko-t)" data-act="esborra-doc" data-id="' + d.id + '" data-path="' + esc(d.storage_path) + '" aria-label="Esborrar ' + esc(d.titol) + '">' + ICO.paperera + '</button>' : '') + '</div>';
+}
+function titolDoc() {
+  var t = document.getElementById('d-tipus'), m = document.getElementById('d-mes'), ti = document.getElementById('d-titol'), mf = document.getElementById('d-mes-f');
+  if (!t || !ti) return;
+  mf.classList.toggle('hidden', t.value !== 'nomina');
+  if (t.value === 'nomina' && m.value) { var p = m.value.split('-'); ti.value = 'Nòmina ' + MESOS[parseInt(p[1], 10) - 1] + ' ' + p[0]; }
+  else if (t.value === 'contracte' && /^Nòmina/.test(ti.value)) ti.value = 'Contracte de treball';
+  else if (t.value === 'altres' && /^(Nòmina|Contracte)/.test(ti.value)) ti.value = '';
+}
+async function obreDoc(btn) {
+  var w = window.open('', '_blank');
+  var r = await sb.storage.from('documents').createSignedUrl(btn.getAttribute('data-path'), 120);
+  if (r.error) { if (w) w.close(); return toast(errMsg(r.error), true); }
+  if (w) w.location.href = r.data.signedUrl; else location.href = r.data.signedUrl;
+  if (btn.getAttribute('data-meu') === '1' && btn.getAttribute('data-vist') === '0') {
+    await sb.rpc('marcar_document_vist', { p_id: btn.getAttribute('data-id') });
+    pintaVista();
+  }
+}
+async function pujaDoc(form) {
+  var err = document.getElementById('d-err');
+  function mostra(m) { err.textContent = m; err.classList.remove('hidden'); }
+  err.classList.add('hidden');
+  var tid = E(form, 'treb').value, fitxer = E(form, 'fitxer').files[0], titol = E(form, 'titol').value.trim(), tipus = E(form, 'tipus').value;
+  if (!tid) return mostra('Tria per a qui és el document.');
+  if (!titol) return mostra('Posa-hi un títol.');
+  if (!fitxer) return mostra('Tria el fitxer PDF.');
+  if (fitxer.type !== 'application/pdf') return mostra('Només es poden pujar fitxers PDF.');
+  if (fitxer.size > 10 * 1024 * 1024) return mostra('El fitxer supera els 10 MB.');
+  var btn = form.querySelector('button[type=submit]'); btn.disabled = true; btn.textContent = 'Pujant…';
+  var path = tid + '/' + (crypto.randomUUID ? crypto.randomUUID() : Date.now() + '-' + Math.random().toString(36).slice(2)) + '.pdf';
+  var up = await sb.storage.from('documents').upload(path, fitxer, { contentType: 'application/pdf', upsert: false });
+  if (up.error) { btn.disabled = false; btn.textContent = 'Pujar'; return mostra(errMsg(up.error)); }
+  var periode = tipus === 'nomina' && E(form, 'mes').value ? E(form, 'mes').value + '-01' : null;
+  var ins = await sb.from('documents').insert({ treballador_id: tid, tipus: tipus, titol: titol, periode: periode, storage_path: path, mida_bytes: fitxer.size, pujat_per: S.me.id });
+  if (ins.error) { await sb.storage.from('documents').remove([path]); btn.disabled = false; btn.textContent = 'Pujar'; return mostra(errMsg(ins.error)); }
+  toast('Document pujat per a ' + nom(tid));
+  pintaVista();
+}
+async function esborraDoc(btn) {
+  if (!confirm('Esborrar aquest document? No es pot desfer.')) return;
+  var r = await sb.from('documents').delete().eq('id', btn.getAttribute('data-id'));
+  if (r.error) return toast(errMsg(r.error), true);
+  await sb.storage.from('documents').remove([btn.getAttribute('data-path')]);
+  toast('Document esborrat'); pintaVista();
+}
+
+/* =====================================================================
+   VISTA: CONFIGURACIÓ (admin)
+   ===================================================================== */
+async function vConfiguracio() {
+  var users = q(await sb.from('perfils').select('*').order('actiu', { ascending: false }).order('nom'));
+  var pl = q(await sb.from('plantilles').select('*').order('ordre').order('nom'));
+  return '<div class="cap"><h1>Configuració</h1></div>' +
+    '<div class="row between"><h2 class="sec-title">Usuaris (' + users.filter(function (u) { return u.actiu; }).length + ' actius)</h2><button class="btn prim small" data-act="nou-usuari">' + ICO.mes + 'Nou usuari</button></div>' +
+    users.map(function (u) {
+      return '<button class="card link" data-act="edita-usuari" data-id="' + u.id + '" style="' + (u.actiu ? '' : 'opacity:.6') + '"><div class="row between"><b>' + esc(u.nom) + '</b>' +
+        '<span class="row">' + (u.gestiona_documents ? '<span class="tag neutre">Documents</span>' : '') + '<span class="tag ' + (u.actiu ? 'ok' : 'ko') + '">' + (u.actiu ? esc(ROLS[u.rol]) : 'Desactivat') + '</span></span></div>' +
+        '<span class="hint">' + esc(u.email) + '</span></button>';
+    }).join('') +
+    '<div class="row between" style="margin-top:10px"><h2 class="sec-title">Plantilles de torn</h2><button class="btn small" data-act="plantilla-edita">' + ICO.mes + 'Nova</button></div>' +
+    '<p class="hint" style="margin:0">Horaris habituals per omplir la planificació amb un toc.</p>' +
+    (pl.length ? pl.map(function (p) {
+      return '<button class="card link" data-act="plantilla-edita" data-id="' + p.id + '"><div class="row between"><b>' + esc(p.nom) + '</b><span>' + esc(tornTxt(Object.assign({ tipus: 'treball' }, p))) + '</span></div></button>';
+    }).join('') : '<div class="buit">Cap plantilla.</div>');
+}
+
+async function crida(body) {
+  var r = await sb.functions.invoke('gestio-usuaris', { body: body });
+  if (r.error) {
+    var m = r.error.message;
+    try { var j = await r.error.context.json(); if (j && j.error) m = j.error; } catch (e) { /* res */ }
+    throw new Error(m);
+  }
+  return r.data;
+}
+function pinAleatori() { var a = new Uint32Array(1); crypto.getRandomValues(a); return String(a[0] % 10000).padStart(4, '0'); }
+
+function modalNouUsuari() {
+  obreModal(capModal('Nou usuari') +
+    '<form class="sheet-cos" data-form="nou-usuari" novalidate>' +
+      '<div class="field"><label for="u-nom">Nom i cognom</label><input id="u-nom" name="nom" class="inp" maxlength="80" required autofocus></div>' +
+      '<div class="field"><label for="u-email">Email</label><input id="u-email" name="email" class="inp" type="email" required></div>' +
+      '<div class="grid2"><div class="field"><label for="u-rol">Rol</label><select id="u-rol" name="rol" class="inp">' +
+        Object.keys(ROLS).map(function (k) { return '<option value="' + k + '">' + ROLS[k] + '</option>'; }).join('') + '</select></div>' +
+      '<div class="field"><label for="u-pin">PIN inicial</label><div class="row"><input id="u-pin" name="pin" class="inp" inputmode="numeric" maxlength="4" value="' + pinAleatori() + '" style="font-weight:700;letter-spacing:.3em"><button type="button" class="btn small" data-act="pin-nou" data-for="u-pin" aria-label="Generar un altre PIN">↻</button></div></div></div>' +
+      '<label class="row" style="min-height:44px"><input type="checkbox" name="docs" style="width:20px;height:20px"> Pot pujar i veure els documents de tothom</label>' +
+      '<p class="hint" style="margin:0">Apunta el PIN i dona’l a la persona. Després el pot canviar des del seu compte.</p>' +
+      '<div id="u-err" class="msg-box ko hidden" role="alert"></div>' +
+      '<button class="btn prim full" type="submit">Crear usuari</button></form>');
+}
+async function creaUsuari(form) {
+  var err = document.getElementById('u-err'), btn = form.querySelector('button[type=submit]');
+  var pin = E(form, 'pin').value.trim();
+  if (!E(form, 'nom').value.trim()) { err.textContent = 'Cal el nom.'; err.classList.remove('hidden'); return; }
+  if (!/^\d{4}$/.test(pin)) { err.textContent = 'El PIN ha de tenir 4 xifres.'; err.classList.remove('hidden'); return; }
+  btn.disabled = true; btn.textContent = 'Creant…';
+  try {
+    await crida({ accio: 'crear', nom: E(form, 'nom').value.trim(), email: E(form, 'email').value.trim(), rol: E(form, 'rol').value, pin: pin, gestiona_documents: E(form, 'docs').checked });
+    await carregaDirectori();
+    tancaModal(true);
+    toast('Usuari creat. PIN: ' + pin);
+  } catch (e) { err.textContent = errMsg(e); err.classList.remove('hidden'); btn.disabled = false; btn.textContent = 'Crear usuari'; }
+}
+async function modalEditaUsuari(id) {
+  var u = q(await sb.from('perfils').select('*').eq('id', id).single());
+  var jo = u.id === S.me.id;
+  obreModal(capModal(u.nom) +
+    '<form class="sheet-cos" data-form="edita-usuari" data-id="' + u.id + '" novalidate>' +
+      '<div class="field"><label for="e-nom">Nom</label><input id="e-nom" name="nom" class="inp" maxlength="80" value="' + esc(u.nom) + '"></div>' +
+      '<div class="field"><label for="e-rol">Rol</label><select id="e-rol" name="rol" class="inp"' + (jo ? ' disabled' : '') + '>' +
+        Object.keys(ROLS).map(function (k) { return '<option value="' + k + '"' + (u.rol === k ? ' selected' : '') + '>' + ROLS[k] + '</option>'; }).join('') + '</select>' +
+        (jo ? '<span class="hint">No pots canviar el teu propi rol.</span>' : '') + '</div>' +
+      '<label class="row" style="min-height:44px"><input type="checkbox" name="docs" style="width:20px;height:20px"' + (u.gestiona_documents ? ' checked' : '') + '> Pot pujar i veure els documents de tothom</label>' +
+      '<button class="btn prim" type="submit">Desar canvis</button>' +
+      '<div class="card" style="gap:10px"><b>Canviar el PIN</b><div class="row"><label for="e-pin" class="sr">Nou PIN</label><input id="e-pin" class="inp" inputmode="numeric" maxlength="4" value="' + pinAleatori() + '" style="font-weight:700;letter-spacing:.3em"><button type="button" class="btn small" data-act="pin-nou" data-for="e-pin" aria-label="Generar un altre PIN">↻</button></div>' +
+        '<button type="button" class="btn" data-act="canvia-pin-usuari" data-id="' + u.id + '">Posar aquest PIN</button></div>' +
+      '<div class="card" style="gap:10px"><b>Canviar l’email</b><label for="e-email" class="sr">Nou email</label><input id="e-email" class="inp" type="email" value="' + esc(u.email) + '">' +
+        '<button type="button" class="btn" data-act="canvia-email" data-id="' + u.id + '">Desar email</button></div>' +
+      (jo ? '' : '<button type="button" class="btn ' + (u.actiu ? 'ko' : '') + '" data-act="activa-usuari" data-id="' + u.id + '" data-actiu="' + (u.actiu ? 0 : 1) + '">' + (u.actiu ? 'Desactivar (deixarà d’entrar i de veure res)' : 'Tornar a activar') + '</button>') +
+      '<div id="e-err" class="msg-box ko hidden" role="alert"></div></form>');
+}
+async function desaUsuari(form) {
+  var id = form.getAttribute('data-id'), canvis = { nom: E(form, 'nom').value.trim(), gestiona_documents: E(form, 'docs').checked };
+  if (!E(form, 'rol').disabled) canvis.rol = E(form, 'rol').value;
+  if (!canvis.nom) return toast('Cal el nom', true);
+  var r = await sb.from('perfils').update(canvis).eq('id', id);
+  if (r.error) return toast(errMsg(r.error), true);
+  if (id === S.me.id) { S.me = Object.assign(S.me, canvis); }
+  await carregaDirectori();
+  tancaModal(true); toast('Desat');
+}
+async function accioUsuari(body, okMsg, tanca) {
+  var err = document.getElementById('e-err');
+  try { await crida(body); toast(okMsg); if (tanca) { await carregaDirectori(); tancaModal(true); } }
+  catch (e) { if (err) { err.textContent = errMsg(e); err.classList.remove('hidden'); } else toast(errMsg(e), true); }
+}
+
+async function modalPlantilla(id) {
+  var p = id ? q(await sb.from('plantilles').select('*').eq('id', id).single()) : { nom: '', entrada: '09:00', inici_pausa: '13:00', fi_pausa: '16:00', sortida: '20:00', ordre: 10 };
+  obreModal(capModal(id ? 'Editar plantilla' : 'Nova plantilla') +
+    '<form class="sheet-cos" data-form="plantilla" data-id="' + (id || '') + '" novalidate>' +
+      '<div class="field"><label for="p-nom">Nom</label><input id="p-nom" name="nom" class="inp" maxlength="40" value="' + esc(p.nom) + '" autofocus></div>' +
+      '<div class="grid2">' +
+      '<div class="field"><label for="c-e">Entrada</label><input id="c-e" name="entrada" class="inp" type="time" step="900" value="' + hm5(p.entrada) + '" data-change="cel-hores"></div>' +
+      '<div class="field"><label for="c-s">Sortida</label><input id="c-s" name="sortida" class="inp" type="time" step="900" value="' + hm5(p.sortida) + '" data-change="cel-hores"></div>' +
+      '<div class="field"><label for="c-ip">Inici pausa</label><input id="c-ip" name="inici_pausa" class="inp" type="time" step="900" value="' + hm5(p.inici_pausa) + '" data-change="cel-hores"></div>' +
+      '<div class="field"><label for="c-fp">Fi pausa</label><input id="c-fp" name="fi_pausa" class="inp" type="time" step="900" value="' + hm5(p.fi_pausa) + '" data-change="cel-hores"></div></div>' +
+      '<div id="cel-val" class="msg-box ok" role="status"></div>' +
+      '<div class="field"><label for="p-ordre">Ordre</label><input id="p-ordre" name="ordre" class="inp" type="number" min="0" max="999" value="' + esc(p.ordre) + '"></div>' +
+      '<div id="cel-err" class="msg-box ko hidden" role="alert"></div>' +
+      '<div class="grid2">' + (id ? '<button type="button" class="btn ko" data-act="esborra-plantilla" data-id="' + id + '">' + ICO.paperera + 'Esborrar</button>' : '<span></span>') + '<button class="btn prim" type="submit">Desar</button></div></form>');
+  validaCel();
+}
+async function desaPlantilla(form) {
+  var v = validaCel(), err = document.getElementById('cel-err');
+  if (!E(form, 'nom').value.trim()) { err.textContent = 'Cal un nom.'; err.classList.remove('hidden'); return; }
+  if (!v.ok) { err.textContent = v.msg; err.classList.remove('hidden'); return; }
+  var fila = { nom: E(form, 'nom').value.trim(), entrada: E(form, 'entrada').value, sortida: E(form, 'sortida').value, inici_pausa: E(form, 'inici_pausa').value || null, fi_pausa: E(form, 'fi_pausa').value || null, ordre: parseInt(E(form, 'ordre').value, 10) || 0 };
+  var id = form.getAttribute('data-id');
+  var r = id ? await sb.from('plantilles').update(fila).eq('id', id) : await sb.from('plantilles').insert(fila);
+  if (r.error) { err.textContent = errMsg(r.error); err.classList.remove('hidden'); return; }
+  tancaModal(true); toast('Plantilla desada');
+}
+
+/* ---------- El meu compte ---------- */
+function modalPerfil() {
+  obreModal(capModal('El meu compte') +
+    '<form class="sheet-cos" data-form="canvia-pin" novalidate>' +
+      '<div class="card" style="gap:4px"><b>' + esc(S.me.nom) + '</b><span class="hint">' + esc(S.me.email) + ' · ' + esc(ROLS[S.me.rol]) + '</span></div>' +
+      '<b>Canviar el meu PIN</b>' +
+      '<div class="field"><label for="m-act">PIN actual</label><input id="m-act" name="act" class="inp pin" type="password" inputmode="numeric" maxlength="4" autocomplete="current-password"></div>' +
+      '<div class="grid2"><div class="field"><label for="m-nou">PIN nou</label><input id="m-nou" name="nou" class="inp pin" type="password" inputmode="numeric" maxlength="4" autocomplete="new-password"></div>' +
+      '<div class="field"><label for="m-rep">Repeteix-lo</label><input id="m-rep" name="rep" class="inp pin" type="password" inputmode="numeric" maxlength="4" autocomplete="new-password"></div></div>' +
+      '<div id="m-err" class="msg-box ko hidden" role="alert"></div>' +
+      '<button class="btn prim" type="submit">Canviar PIN</button>' +
+      '<button type="button" class="btn" data-act="surt" style="margin-top:12px">Tancar la sessió</button></form>');
+}
+async function canviaPin(form) {
+  var err = document.getElementById('m-err');
+  function mostra(m) { err.textContent = m; err.classList.remove('hidden'); }
+  var a = E(form, 'act').value, n = E(form, 'nou').value, r2 = E(form, 'rep').value;
+  if (!/^\d{4}$/.test(a) || !/^\d{4}$/.test(n)) return mostra('Els PIN han de tenir 4 xifres.');
+  if (n !== r2) return mostra('Els dos PIN nous no coincideixen.');
+  if (n === a) return mostra('El PIN nou ha de ser diferent.');
+  if (/^(\d)\1{3}$/.test(n) || n === '1234' || n === '0000') return mostra('Tria un PIN menys fàcil d’endevinar.');
+  var chk = await sb.auth.signInWithPassword({ email: S.me.email, password: pinAContrasenya(a) });
+  if (chk.error) return mostra('El PIN actual no és correcte.');
+  var r = await sb.auth.updateUser({ password: pinAContrasenya(n) });
+  if (r.error) return mostra(errMsg(r.error));
+  tancaModal(); toast('PIN canviat');
+}
+
+/* =====================================================================
+   ESDEVENIMENTS (delegats)
+   ===================================================================== */
+document.addEventListener('click', async function (e) {
+  var el = e.target.closest('[data-act]'); if (!el) return;
+  var a = el.getAttribute('data-act');
+  if (a === 'fons') { if (e.target === el) tancaModal(); return; }
+  if (el.tagName === 'A') return;
+  e.preventDefault();
+  try {
+    switch (a) {
+      case 'tanca': tancaModal(); break;
+      case 'recarrega': pintaVista(); break;
+      case 'perfil': modalPerfil(); break;
+      case 'surt': tancaModal(); await surt(); break;
+      case 'setmana': {
+        var dir = parseInt(el.getAttribute('data-dir'), 10);
+        S.setmana = dir === 0 ? dilluns(new Date()) : addDays(S.setmana, 7 * dir); pintaVista(); break;
+      }
+      case 'setmana-plan': S.setmanaPlan = addDays(S.setmanaPlan, 7 * parseInt(el.getAttribute('data-dir'), 10)); pintaVista(); break;
+      case 'nova-sol': await modalNovaSol(el.getAttribute('data-data')); break;
+      case 'tipus-sol': {
+        var t = el.getAttribute('data-t'), f = el.closest('form');
+        E(f, 'tipus').value = t;
+        f.querySelectorAll('[data-act="tipus-sol"]').forEach(function (b) { b.setAttribute('aria-pressed', String(b === el)); });
+        document.getElementById('ns-canvi').classList.toggle('hidden', t !== 'canvi_horari');
+        document.getElementById('ns-lliure').classList.toggle('hidden', t !== 'dia_lliure');
+        document.getElementById('ns-inter').classList.toggle('hidden', t !== 'intercanvi');
+        break;
+      }
+      case 'fil': await modalFil(el.getAttribute('data-id')); break;
+      case 'resp-inter': {
+        var ok = el.getAttribute('data-ok') === '1';
+        if (!ok && !confirm('Rebutjar l’intercanvi?')) break;
+        q(await sb.rpc('respondre_intercanvi', { p_id: el.getAttribute('data-id'), p_accepta: ok }));
+        toast(ok ? 'Acceptat. Ara ho ha d’aprovar un supervisor.' : 'Intercanvi rebutjat');
+        tancaModal(true); break;
+      }
+      case 'resol': {
+        var aprova = el.getAttribute('data-ok') === '1', txt = document.getElementById('fil-txt');
+        var comentari = txt && txt.value.trim() || null;
+        if (!aprova && !comentari && !confirm('Rebutjar sense explicar el motiu?\n(Pots escriure’l a la caixa de missatges abans.)')) break;
+        q(await sb.rpc('resoldre_sollicitud', { p_id: el.getAttribute('data-id'), p_aprovar: aprova, p_comentari: comentari }));
+        toast(aprova ? 'Aprovada · horari actualitzat' : 'Rebutjada');
+        tancaModal(true); break;
+      }
+      case 'cancella':
+        if (!confirm('Cancel·lar aquesta sol·licitud?')) break;
+        q(await sb.rpc('cancellar_sollicitud', { p_id: el.getAttribute('data-id') }));
+        toast('Sol·licitud cancel·lada'); tancaModal(true); break;
+      case 'cel': await modalCel(el.getAttribute('data-p'), el.getAttribute('data-d')); break;
+      case 'tipus-cel': {
+        var tc = el.getAttribute('data-t'), fc = el.closest('form');
+        E(fc, 'tipus').value = tc;
+        fc.querySelectorAll('[data-act="tipus-cel"]').forEach(function (b) { b.setAttribute('aria-pressed', String(b === el)); });
+        document.getElementById('cel-hores').classList.toggle('hidden', tc !== 'treball');
+        break;
+      }
+      case 'plantilla': {
+        var p = S.plantilles[parseInt(el.getAttribute('data-i'), 10)];
+        document.getElementById('c-e').value = hm5(p.entrada); document.getElementById('c-s').value = hm5(p.sortida);
+        document.getElementById('c-ip').value = hm5(p.inici_pausa); document.getElementById('c-fp').value = hm5(p.fi_pausa);
+        validaCel(); break;
+      }
+      case 'esborra-cel': {
+        if (!confirm('Treure el torn d’aquest dia?')) break;
+        q(await sb.from('torns').delete().eq('treballador_id', el.getAttribute('data-p')).eq('data', el.getAttribute('data-d')));
+        tancaModal(true); toast('Torn tret'); break;
+      }
+      case 'copia-setmana': await copiaSetmana(); break;
+      case 'filtre-docs': S.filtreDocs = el.getAttribute('data-f'); pintaVista(); break;
+      case 'obre-doc': await obreDoc(el); break;
+      case 'esborra-doc': await esborraDoc(el); break;
+      case 'nou-usuari': modalNouUsuari(); break;
+      case 'edita-usuari': await modalEditaUsuari(el.getAttribute('data-id')); break;
+      case 'pin-nou': document.getElementById(el.getAttribute('data-for')).value = pinAleatori(); break;
+      case 'canvia-pin-usuari': {
+        var pin = document.getElementById('e-pin').value.trim();
+        if (!/^\d{4}$/.test(pin)) { toast('El PIN ha de tenir 4 xifres', true); break; }
+        await accioUsuari({ accio: 'canviar_pin', id: el.getAttribute('data-id'), pin: pin }, 'PIN canviat a ' + pin, false); break;
+      }
+      case 'canvia-email':
+        await accioUsuari({ accio: 'canviar_email', id: el.getAttribute('data-id'), email: document.getElementById('e-email').value.trim() }, 'Email canviat', true); break;
+      case 'activa-usuari': {
+        var act = el.getAttribute('data-actiu') === '1';
+        if (!act && !confirm('Desactivar aquest usuari? No podrà entrar ni veure res fins que el tornis a activar.')) break;
+        await accioUsuari({ accio: 'activar', id: el.getAttribute('data-id'), actiu: act }, act ? 'Usuari activat' : 'Usuari desactivat', true); break;
+      }
+      case 'plantilla-edita': await modalPlantilla(el.getAttribute('data-id')); break;
+      case 'esborra-plantilla':
+        if (!confirm('Esborrar aquesta plantilla?')) break;
+        q(await sb.from('plantilles').delete().eq('id', el.getAttribute('data-id')));
+        tancaModal(true); toast('Plantilla esborrada'); break;
+    }
+  } catch (err) { toast(errMsg(err), true); }
+});
+
+document.addEventListener('submit', async function (e) {
+  var f = e.target.closest('[data-form]'); if (!f) return;
+  e.preventDefault();
+  var tipus = f.getAttribute('data-form');
+  try {
+    if (tipus === 'login') await login(f);
+    else if (tipus === 'nova-sol') await enviaNovaSol(f);
+    else if (tipus === 'missatge') await enviaMissatge(f);
+    else if (tipus === 'cel') await desaCel(f);
+    else if (tipus === 'puja') await pujaDoc(f);
+    else if (tipus === 'nou-usuari') await creaUsuari(f);
+    else if (tipus === 'edita-usuari') await desaUsuari(f);
+    else if (tipus === 'plantilla') await desaPlantilla(f);
+    else if (tipus === 'canvia-pin') await canviaPin(f);
+  } catch (err) { toast(errMsg(err), true); }
+});
+
+function enCanvi(e) {
+  var el = e.target.closest('[data-change]'); if (!el) return;
+  var c = el.getAttribute('data-change');
+  if (c === 'ns-hores') validaNovaSol();
+  else if (c === 'ns-data' && e.type === 'change') omplirTornActual();
+  else if (c === 'cel-hores') validaCel();
+  else if (c === 'doc-titol') titolDoc();
+  else if (c === 'filtre-treb' && e.type === 'change') { S.filtreTreb = el.value; pintaVista(); }
+}
+document.addEventListener('input', enCanvi);
+document.addEventListener('change', enCanvi);
+document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && S.modal) tancaModal(); });
+
+inici();
+</script>
+</body>
+</html>
